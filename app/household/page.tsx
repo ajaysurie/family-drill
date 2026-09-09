@@ -6,14 +6,14 @@ const terms = [
   "Surprise practice emails may be sent to household members.",
   "Every sender organization and situation is fictional.",
   "A drill will never ask for credentials, financial details, or other private information.",
-  "Family will coach kindly after a miss, rather than shame or punish.",
+  "After a miss, the family will review the clues without shame or punishment.",
   "Any member can ask the organizer to stop sending drills."
 ];
 
 export default function HouseholdPage() {
   const household = getHousehold();
-  return <section><span className="eyebrow">Household agreement</span><h1>Agree once. Practice together.</h1>
-    <p>{household.organizerName} organizes this household’s safe, fictional surprise drills.</p>
+  return <section><span className="eyebrow">Household agreement</span><h1>Agree once before surprise drills begin.</h1>
+    <p>{household.organizerName} organizes this household's fictional surprise drills.</p>
     <article className="card"><h2>Plain-language terms</h2><ul>{terms.map((term) => <li key={term}>{term}</li>)}</ul>
       {household.status === "active" ? <p className="notice">Agreement active since {new Date(household.activatedAt!).toLocaleDateString()} · terms {household.termsVersion}</p> : <form action={activateAgreement}><button>Activate household agreement</button></form>}
     </article>

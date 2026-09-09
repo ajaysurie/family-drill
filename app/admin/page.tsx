@@ -5,7 +5,7 @@ import { sendDrill } from "./actions";
 export default function AdminPage() {
   const household = getHousehold();
   return <section><span className="eyebrow">Local demo</span><h1>Family drill report</h1>
-    <p>Surprise drills are available because the household agreement is <b>{household.status}</b>. Sending uses only the console mail adapter. <Link href="/household">View agreement and members</Link>.</p>
+    <p>The household agreement is <b>{household.status}</b>. This demo sends mail only to the console. <Link href="/household">View the agreement and members</Link>.</p>
     <div className="table">
       {getMembers().map((member) => { const report = getReport(member.id); return <article className="row" key={member.id}>
         <div><h2>{member.name}</h2><p>{member.email}</p></div>
