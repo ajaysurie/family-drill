@@ -1,0 +1,23 @@
+[
+  {
+    "id": "garden-club",
+    "fromName": "Pinecone Garden Circle",
+    "subject": "Vote for this month's mystery flower",
+    "preview": "The vote closes unusually soon. Follow the practice link to see the clues.",
+    "lesson": ["Pause when a harmless request is made artificially urgent.", "Check whether you expected the message and recognize the sender.", "Ask the organizer another way before following a surprising link."]
+  },
+  {
+    "id": "book-cart",
+    "fromName": "Moonbeam Book Cart",
+    "subject": "A reserved story needs your confirmation",
+    "preview": "A fictional reservation may disappear today unless you follow the practice link.",
+    "lesson": ["Urgency is a cue to slow down, not speed up.", "Inspect the sender and link destination before acting.", "Open a known site yourself instead of using an unexpected message link."]
+  },
+  {
+    "id": "picnic-table",
+    "fromName": "Blue Acorn Picnic Club",
+    "subject": "The picnic table changed at the last minute",
+    "preview": "See the fictional new meeting spot using the practice link.",
+    "lesson": ["Last-minute changes can be used to bypass careful thinking.", "Confirm surprising plans with someone you know.", "Never provide sensitive information after following an email link."]
+  }
+]
