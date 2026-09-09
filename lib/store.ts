@@ -1,40 +1,56 @@
 import scenariosData from "./scenarios.json";
-import type { Attempt, DrillEvent, Participant, Scenario } from "./types";
+import type { Attempt, DrillEvent, HouseholdAgreement, Member, Scenario } from "./types";
 
 export const scenarios = scenariosData as Scenario[];
-const participants: Participant[] = [
-  { id: "maya", name: "Maya", email: "maya@example.test", inviteToken: "invite-maya", consent: { status: "pending" } },
-  { id: "leo", name: "Leo", email: "leo@example.test", inviteToken: "invite-leo", consent: { status: "accepted", acceptedAt: "2026-01-10T12:00:00.000Z" } },
-  { id: "ruth", name: "Ruth", email: "ruth@example.test", inviteToken: "invite-ruth", consent: { status: "accepted", acceptedAt: "2026-01-12T12:00:00.000Z" } }
+const household: HouseholdAgreement = {
+  id: "household-demo",
+  organizerName: "Alex",
+  termsVersion: "2026-09-01",
+  status: "active",
+  activatedAt: "2026-09-01T12:00:00.000Z"
+};
+const members: Member[] = [
+  { id: "maya", name: "Maya", email: "maya@example.test", householdId: household.id },
+  { id: "leo", name: "Leo", email: "leo@example.test", householdId: household.id },
+  { id: "ruth", name: "Ruth", email: "ruth@example.test", householdId: household.id }
 ];
 const attempts: Attempt[] = [
-  { id: "attempt-leo", participantId: "leo", scenarioId: "garden-club", drillToken: "drill-leo", sentAt: "2026-01-15T12:00:00.000Z" }
+  { id: "attempt-leo", memberId: "leo", scenarioId: "garden-club", drillToken: "drill-leo", createdAt: "2026-09-02T12:00:00.000Z" }
 ];
 const events: DrillEvent[] = [];
 
-export function getParticipants() { return participants; }
-export function findInvite(token: string) { return participants.find((p) => p.inviteToken === token); }
-export function acceptInvite(token: string) {
-  const participant = findInvite(token);
-  if (participant && participant.consent.status !== "accepted") participant.consent = { status: "accepted", acceptedAt: new Date().toISOString() };
-  return participant;
+export function getHousehold() { return household; }
+export function activateHousehold() {
+  if (household.status !== "active") {
+    household.status = "active";
+    household.activatedAt = new Date().toISOString();
+  }
+  return household;
+}
+export function getMembers() { return members; }
+export function addMember(name: string, email: string) {
+  const member: Member = { id: crypto.randomUUID(), name: name.trim(), email: email.trim(), householdId: household.id };
+  if (!member.name || !member.email) return;
+  members.push(member);
+  return member;
 }
 export function findAttempt(token: string) { return attempts.find((attempt) => attempt.drillToken === token); }
-export function sendAttempt(participantId: string, scenarioId: string) {
-  const participant = participants.find((p) => p.id === participantId && p.consent.status === "accepted");
-  const scenario = scenarios.find((s) => s.id === scenarioId);
-  if (!participant || !scenario) return;
-  const attempt: Attempt = { id: crypto.randomUUID(), participantId, scenarioId, drillToken: crypto.randomUUID(), sentAt: new Date().toISOString() };
+export function sendAttempt(memberId: string, scenarioId: string) {
+  if (household.status !== "active") return;
+  const member = members.find((candidate) => candidate.id === memberId && candidate.householdId === household.id);
+  const scenario = scenarios.find((candidate) => candidate.id === scenarioId);
+  if (!member || !scenario) return;
+  const attempt: Attempt = { id: crypto.randomUUID(), memberId, scenarioId, drillToken: crypto.randomUUID(), createdAt: new Date().toISOString() };
   attempts.push(attempt);
-  return { participant, scenario, attempt };
+  return { member, scenario, attempt };
 }
-export function recordDeliberateClick(token: string) {
+export function recordLureOpened(token: string) {
   const attempt = findAttempt(token);
   if (!attempt) return;
-  if (!events.some((event) => event.attemptId === attempt.id)) events.push({ id: crypto.randomUUID(), attemptId: attempt.id, type: "deliberate_click", occurredAt: new Date().toISOString() });
+  if (!events.some((event) => event.attemptId === attempt.id)) events.push({ id: crypto.randomUUID(), attemptId: attempt.id, type: "lure_opened", occurredAt: new Date().toISOString() });
   return attempt;
 }
-export function getReport(participantId: string) {
-  const participantAttempts = attempts.filter((a) => a.participantId === participantId);
-  return { sent: participantAttempts.length, deliberateClicks: events.filter((e) => participantAttempts.some((a) => a.id === e.attemptId)).length };
+export function getReport(memberId: string) {
+  const memberAttempts = attempts.filter((attempt) => attempt.memberId === memberId);
+  return { sent: memberAttempts.length, lureEngagements: events.filter((event) => memberAttempts.some((attempt) => attempt.id === event.attemptId)).length };
 }
