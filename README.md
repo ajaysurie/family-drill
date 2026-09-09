@@ -15,6 +15,10 @@ This is practice under a prior household agreement. It is not covert phishing, s
 
 The MVP uses an in-memory seed store with one active household, three members, and one attempt. Changes reset when the server restarts.
 
+## Privacy
+
+This repository runs locally and does not connect to a hosted Family Drill service. Household members, agreement status, and drill results stay in the server's in-memory store. The app has no database, analytics, tracking pixels, or third-party mail connection. The console mail stub prints each drill link in the terminal instead of sending email.
+
 ## Quickstart
 
 Requires Node.js 20.9 or newer.
@@ -28,6 +32,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000), then try:
 
+- `/`: marketing overview and links to the setup and safety pages
 - `/household`: agreement status, plain-language terms, member list, and add-member form
 - `/admin`: surprise-drill controls and sent-versus-deliberate-engagement reports
 - `/d/drill-leo`: seeded immediate reveal. A bare GET does not record engagement.
@@ -43,7 +48,10 @@ The original artwork lives in [`public/brand`](public/brand) as hand-authored SV
 ```bash
 npm test
 npm run build
+npm start
 ```
+
+`npm run build` creates the production build. Run `npm start` after it and check `/`, `/household`, and `/admin` at [http://localhost:3000](http://localhost:3000). The production server still uses the in-memory store and console mail stub; it does not make the MVP persistent or send real email.
 
 The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all three scenarios fictional and educational.
 
