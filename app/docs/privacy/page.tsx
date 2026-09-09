@@ -1,0 +1,1 @@
+export default function PrivacyPage() { return <><span className="eyebrow">Placeholder</span><h1>Privacy</h1><p className="lede">A full hosted-service privacy notice will be published before hosted signup opens. The current repository is a local demo and collects no credentials.</p></>; }

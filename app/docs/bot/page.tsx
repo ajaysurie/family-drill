@@ -1,0 +1,6 @@
+export default function BotDocsPage() { return <>
+  <span className="eyebrow">Grok Bot template</span><h1>A coach and scheduler. That’s it.</h1><p className="lede">The planned bot template helps a household choose a cadence, start an approved drill through Family Drill, and talk through the lesson afterward.</p>
+  <div className="status-pill">Template placeholder · not yet published</div>
+  <h2>Install brief</h2><ol className="numbered"><li><span>1</span><div><strong>Run a Family Drill app</strong><p>Use the hosted service or deploy the open-source app yourself.</p></div></li><li><span>2</span><div><strong>Give the bot your app URL</strong><p>Set the future <code>FAMILY_DRILL_APP_URL</code> instruction to your trusted HTTPS app address.</p></div></li><li><span>3</span><div><strong>Keep delivery in the app</strong><p>The bot calls the app’s approved workflow. It never stores, requests, or embeds ESP API keys.</p></div></li><li><span>4</span><div><strong>Coach kindly</strong><p>Use the reveal’s clues for a short, no-shame family conversation.</p></div></li></ol>
+  <h2>Non-negotiable boundary</h2><p>Mail authentication and delivery belong to the Family Drill app. Do not paste ESP credentials into bot instructions, actions, chat, or a template.</p>
+  </>; }
