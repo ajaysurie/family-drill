@@ -47,6 +47,8 @@ npm run build
 
 The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all three scenarios fictional and educational.
 
+For real-server verification, launch the in-repo skill with `npm run verify:skill-launch`, then run `npm run verify:skill-doctor` and (when Playwright Chromium is available) `npm run verify:skill-drive`; finish with `npm run verify:skill-cleanup`. The full workflow and verified surfaces are documented in `.cursor/skills/verify-family-drill/SKILL.md`.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
