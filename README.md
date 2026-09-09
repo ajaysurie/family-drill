@@ -13,7 +13,7 @@ This is practice under a prior household agreement. It is not covert phishing, s
 5. The member explicitly chooses **I opened this from the email** before a lure engagement is recorded.
 6. The family reviews the clues after a miss. Any member can ask the organizer to stop.
 
-The MVP uses an in-memory seed store with one active household, three members, and one attempt. Changes reset when the server restarts.
+Organizer identities, agreements, members, attempts, and explicit drill events are persisted in Vercel Postgres (Neon) through Drizzle. Relatives never create accounts: their unguessable drill-token links remain public.
 
 ## Quickstart
 
@@ -22,17 +22,27 @@ Requires Node.js 20.9 or newer.
 ```bash
 cp .env.example .env.local
 npm install
+# Apply db/migrations/0001_foundation.sql to the database.
+# Optionally apply db/seed.sql for local demo data.
 npm test
 npm run dev
 ```
 
+Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. Sign in at `/login` with an organizer email. In development, leave `EMAIL_SERVER` unset and copy the `[auth:magic-link]` URL from the console. In production, set `EMAIL_SERVER` and `EMAIL_FROM` for a transactional SMTP service such as Resend; these settings deliver login links only, not drills.
+
 Open [http://localhost:3000](http://localhost:3000), then try:
 
-- `/household`: agreement status, plain-language terms, member list, and add-member form
-- `/admin`: surprise-drill controls and sent-versus-deliberate-engagement reports
+- `/household`: organizer-only agreement status, plain-language terms, member list, and add-member form
+- `/admin`: organizer-only surprise-drill controls and sent-versus-deliberate-engagement reports
 - `/d/drill-leo`: seeded immediate reveal. A bare GET does not record engagement.
 
-`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console `MailAdapter`: it has no real email service, provider secrets, or SendGrid integration. `.env.example` contains only non-secret local settings.
+The home page, `/docs/*`, and `/d/[token]` are public. Auth.js gates `/household` and `/admin`; their server actions also require the organizer session, and database queries scope records to that organizer.
+
+`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console drill `MailAdapter`. SMTP configuration is exclusively for organizer login links and does not enable drill delivery.
+
+## Privacy model
+
+The database stores the organizer email identity, household agreement, relative names and email addresses, attempts, and deliberate engagement events. Auth.js stores expiring verification tokens and organizer sessions. Relative links use random tokens and need no relative account. A GET only reveals the lesson; it never records engagement. Drills collect no credentials, payment details, open pixels, attachments, or form answers.
 
 ## Development checks
 

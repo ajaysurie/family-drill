@@ -1,0 +1,10 @@
+CREATE TYPE "AgreementStatus" AS ENUM ('draft', 'active');
+CREATE TYPE "DrillEventType" AS ENUM ('lure_opened');
+CREATE TABLE "Organizer" ("id" text PRIMARY KEY, "name" text, "email" text UNIQUE, "emailVerified" timestamp, "image" text);
+CREATE TABLE "Account" ("userId" text NOT NULL REFERENCES "Organizer"("id") ON DELETE CASCADE, "type" text NOT NULL, "provider" text NOT NULL, "providerAccountId" text NOT NULL, "refresh_token" text, "access_token" text, "expires_at" integer, "token_type" text, "scope" text, "id_token" text, "session_state" text, PRIMARY KEY ("provider", "providerAccountId"));
+CREATE TABLE "Session" ("sessionToken" text PRIMARY KEY, "userId" text NOT NULL REFERENCES "Organizer"("id") ON DELETE CASCADE, "expires" timestamp NOT NULL);
+CREATE TABLE "VerificationToken" ("identifier" text NOT NULL, "token" text NOT NULL, "expires" timestamp NOT NULL, PRIMARY KEY ("identifier", "token"));
+CREATE TABLE "HouseholdAgreement" ("id" text PRIMARY KEY, "organizerId" text NOT NULL UNIQUE REFERENCES "Organizer"("id") ON DELETE CASCADE, "termsVersion" text NOT NULL, "status" "AgreementStatus" NOT NULL DEFAULT 'draft', "activatedAt" timestamp);
+CREATE TABLE "Member" ("id" text PRIMARY KEY, "name" text NOT NULL, "email" text NOT NULL, "householdId" text NOT NULL REFERENCES "HouseholdAgreement"("id") ON DELETE CASCADE);
+CREATE TABLE "Attempt" ("id" text PRIMARY KEY, "memberId" text NOT NULL REFERENCES "Member"("id") ON DELETE CASCADE, "scenarioId" text NOT NULL, "drillToken" text NOT NULL UNIQUE, "createdAt" timestamp NOT NULL DEFAULT now());
+CREATE TABLE "DrillEvent" ("id" text PRIMARY KEY, "attemptId" text NOT NULL REFERENCES "Attempt"("id") ON DELETE CASCADE, "type" "DrillEventType" NOT NULL, "occurredAt" timestamp NOT NULL DEFAULT now(), UNIQUE ("attemptId", "type"));
