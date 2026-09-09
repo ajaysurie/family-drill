@@ -1,0 +1,1 @@
+export default function ContactPage() { return <><span className="eyebrow">Project contact</span><h1>Contact</h1><p className="lede">A support address will be added before the hosted service opens. Until then, use the public GitHub repository for project questions.</p><a className="text-link" href="https://github.com/ajaysurie/family-drill">Open GitHub ↗</a></>; }
