@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const drillSteps = [
@@ -21,16 +22,8 @@ export default function Home() {
         </div>
         <p className="trust-line">MIT <i/> open source <i/> household-only <i/> owned-domain mail</p>
       </div>
-      <div className="drill-preview" aria-label="Example fictional practice email">
-        <div className="preview-bar"><span/><span/><span/><b>INBOX / PRACTICE</b></div>
-        <div className="preview-body">
-          <span className="practice-stamp">FICTIONAL DRILL</span>
-          <small>From</small><strong>Northbridge Benefits</strong>
-          <small>Subject</small><strong>Your family coverage needs attention</strong>
-          <p>We noticed a time-sensitive change. Review the notice before Friday.</p>
-          <span className="fake-button">Review notice</span>
-          <p className="tiny">A made-up organization. An owned, authenticated sender. Nothing to enter or download.</p>
-        </div>
+      <div className="hero-art">
+        <Image src="/brand/hero-coaching.svg" alt="A family calmly practicing how to spot a suspicious message together" width={720} height={620} priority />
       </div>
     </section>
 

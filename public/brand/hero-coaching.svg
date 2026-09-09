@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 620" role="img" aria-labelledby="title desc">
+<title id="title">A family practices spotting a suspicious message</title>
+<desc id="desc">Three people sit together at a kitchen table, calmly reviewing a fictional practice message and its warning clues.</desc>
+<path d="M102 182C142 76 279 30 415 68c144 39 238 169 207 306-30 133-167 210-322 188C143 540 54 427 76 298c7-41 11-74 26-116Z" fill="#dff3e9"/>
+<path d="M79 517h574" stroke="#17312b" stroke-width="8" stroke-linecap="round"/>
+<path d="M139 363h449l-35 154H174Z" fill="#f3efe3" stroke="#17312b" stroke-width="7" stroke-linejoin="round"/>
+<!-- calm family group -->
+<circle cx="198" cy="241" r="47" fill="#d9946f" stroke="#17312b" stroke-width="7"/>
+<path d="M154 235c3-45 29-67 61-54 22 8 32 28 31 58-18-8-31-23-37-42-10 22-28 35-55 38Z" fill="#17312b"/>
+<path d="M131 379c3-75 28-113 68-113s67 38 72 113" fill="#fbfaf5" stroke="#17312b" stroke-width="7" stroke-linecap="round"/>
+<circle cx="519" cy="242" r="47" fill="#8e5f43" stroke="#17312b" stroke-width="7"/>
+<path d="M474 235c-1-49 24-72 57-62 29 9 39 31 33 69-22-2-43-13-58-33-6 13-17 22-32 26Z" fill="#17312b"/>
+<path d="M450 379c4-75 28-113 69-113s66 38 70 113" fill="#176b52" stroke="#17312b" stroke-width="7" stroke-linecap="round"/>
+<circle cx="350" cy="289" r="38" fill="#efb58c" stroke="#17312b" stroke-width="7"/>
+<path d="M313 283c3-37 23-53 49-45 19 6 29 23 27 49-19-2-33-11-43-27-7 12-18 20-33 23Z" fill="#7c4f37"/>
+<path d="M294 400c3-59 22-89 57-89s55 30 59 89" fill="#f4c95d" stroke="#17312b" stroke-width="7" stroke-linecap="round"/>
+<!-- message card and coaching clues -->
+<g transform="rotate(-4 354 405)"><rect x="251" y="355" width="220" height="135" rx="15" fill="#fbfaf5" stroke="#17312b" stroke-width="7"/><circle cx="282" cy="388" r="12" fill="#d86f45"/><path d="M310 384h122M310 402h89M281 435h152M281 455h104" stroke="#17312b" stroke-width="7" stroke-linecap="round" opacity=".72"/></g>
+<path d="m443 161 19 20 37-45" fill="none" stroke="#176b52" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="462" cy="163" r="52" fill="none" stroke="#176b52" stroke-width="7" stroke-dasharray="5 14" stroke-linecap="round"/>
+<path d="M185 299c8 10 20 10 28 0M505 300c8 10 20 10 28 0M339 330c7 8 16 8 23 0" fill="none" stroke="#17312b" stroke-width="5" stroke-linecap="round"/>
+<path d="M89 129c29 0 29-36 29-36s0 36 29 36c-29 0-29 36-29 36s0-36-29-36ZM582 95c20 0 20-25 20-25s0 25 20 25c-20 0-20 25-20 25s0-25-20-25Z" fill="#f4c95d"/>
+</svg>

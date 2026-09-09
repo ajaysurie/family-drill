@@ -34,6 +34,10 @@ Open [http://localhost:3000](http://localhost:3000), then try:
 
 `Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console `MailAdapter`: it has no real email service, provider secrets, or SendGrid integration. `.env.example` contains only non-secret local settings.
 
+## Brand assets
+
+The original artwork lives in [`public/brand`](public/brand) as hand-authored SVG text files. The house mark and coaching illustration use the interface palette (`#17312b` ink, `#176b52` forest green, `#fbfaf5` paper, and `#dff3e9` mint) and depict only fictional, household-focused practice. Keep brand contributions as text-based SVG—do not add PNG, JPEG, WebP, real-company logos, or credential-entry imagery.
+
 ## Development checks
 
 ```bash

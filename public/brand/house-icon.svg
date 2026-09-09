@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Family Drill house mark">
+  <circle cx="32" cy="32" r="31" fill="#dff3e9"/>
+  <path d="M13 31 32 15l19 16v21H13Z" fill="#fbfaf5" stroke="#17312b" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M25 52V37h14v15" fill="#dff3e9" stroke="#17312b" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M23 29c2-5 7-5 9 0 2-5 7-5 9 0 0 5-9 10-9 10s-9-5-9-10Z" fill="#176b52"/>
+</svg>
