@@ -1,18 +1,19 @@
 # Family Drill
 
-Family Drill is a tiny, local, open-source app for **consent-based fictional email scam practice with older relatives**. An organizer invites a participant, the participant opts in, and the organizer can send a safe exercise. Following its unique link immediately explains that it was a drill and offers three practical cues.
+Family Drill is a tiny, local, open-source app for **household-agreed surprise email practice**. A family makes one plain-language agreement up front; an organizer can then send members unexpected but entirely fictional exercises. Following a drill link reveals the lesson immediately and gives the family a short, shame-free coaching script.
 
-It is **not** a phishing kit, monitoring product, or production email service. It does not imitate real brands, relatives, banks, or government agencies; request credentials or financial details; hide tracking pixels; ship attachments; or send anyone away to an external drill page. Reports count only an explicit button POST—not a raw page request, email open, preview, or scanner prefetch.
+This is practice under a prior family agreement—not covert real phishing, surveillance, or brand impersonation. The app never imitates real brands, relatives, banks, or government agencies; requests credentials or financial details; uses tracking pixels; ships attachments; or redirects to an external drill page. Reports count only an explicit button POST—not a raw GET, email open, preview, or scanner prefetch.
 
-## Consent model
+## Household agreement model
 
-1. The relative reads and accepts a plain-language invitation.
-2. Only accepted participants can be sent drills.
-3. The training reveal appears as soon as the unique link loads.
-4. The participant deliberately confirms the interaction before it is scored.
-5. A participant can ask their organizer to stop at any time.
+1. The household agrees that surprise practice emails may be sent.
+2. Drills use fictional organizations only and never ask for credentials.
+3. An organizer can send a drill only while the household agreement is active; there is no per-drill or per-member invite gate.
+4. The reveal appears as soon as the unique link loads, but loading it does not score an engagement.
+5. The member explicitly chooses **I opened this from the email** before a lure engagement is recorded.
+6. Family coaches kindly after a miss, and any member can ask the organizer to stop.
 
-This MVP uses an in-memory seed store, so changes reset when the server restarts.
+The MVP uses an in-memory seed store with one active household, three members, and one attempt. Changes reset when the server restarts.
 
 ## Quickstart
 
@@ -27,11 +28,11 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000), then try:
 
-- `/admin` — seeded participants, reports, and fake-send controls
-- `/invite/invite-maya` — pending consent
-- `/d/drill-leo` — seeded safe training reveal
+- `/household` — agreement status, plain-language terms, member list, and add-member form
+- `/admin` — surprise-drill controls and sent-versus-deliberate-engagement reports
+- `/d/drill-leo` — seeded immediate reveal; a bare GET does not record engagement
 
-`Send drill` writes a local `[mail:stub]` line and unique URL to the development server console. The `MailAdapter` interface is intentionally pluggable, but this repository implements only the default console adapter. **Before connecting any production email service provider (ESP), obtain that provider’s written approval for this consent-based drill use case.** Do not put provider secrets in the repository; `.env.example` documents only non-secret local settings.
+`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console `MailAdapter`: it has no real email service, provider secrets, or SendGrid integration. `.env.example` contains only non-secret local settings.
 
 ## Development checks
 
@@ -40,7 +41,7 @@ npm test
 npm run build
 ```
 
-The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all scenarios fictional and educational.
+The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all three scenarios fictional and educational.
 
 ## License
 
