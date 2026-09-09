@@ -1,8 +1,6 @@
 # Family Drill
 
-Family Drill is a small, local, open-source app for **household-agreed surprise email drills**. A family accepts one plain-language agreement. An organizer can then send household members unexpected, fictional messages. Opening a drill link shows the reveal and coach tips immediately.
-
-This is practice under a prior household agreement. It is not covert phishing, surveillance, or brand impersonation. The app does not imitate real brands, relatives, banks, or government agencies. It does not request credentials or financial details, use tracking pixels, include attachments, or redirect to an external drill page. Reports count only an explicit button POST. A raw GET, email open, preview, or scanner prefetch does not count.
+Family Drill is a local app for household-agreed surprise email drills. A household accepts one plain-language agreement. An organizer can then send household members unexpected, fictional messages. Opening a drill link shows the reveal and coaching tips immediately.
 
 ## Household agreement model
 
@@ -15,7 +13,7 @@ This is practice under a prior household agreement. It is not covert phishing, s
 
 The MVP uses an in-memory seed store with one active household, three members, and one attempt. Changes reset when the server restarts.
 
-## Quickstart
+## How to run
 
 Requires Node.js 20.9 or newer.
 
@@ -26,13 +24,47 @@ npm test
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), then try:
+Open these URLs while the development server is running:
 
-- `/household`: agreement status, plain-language terms, member list, and add-member form
-- `/admin`: surprise-drill controls and sent-versus-deliberate-engagement reports
-- `/d/drill-leo`: seeded immediate reveal. A bare GET does not record engagement.
+- [http://localhost:3000](http://localhost:3000): app home
+- [http://localhost:3000/household](http://localhost:3000/household): agreement status, terms, member list, and add-member form
+- [http://localhost:3000/admin](http://localhost:3000/admin): drill controls and reports
+- [http://localhost:3000/d/drill-leo](http://localhost:3000/d/drill-leo): seeded reveal page
 
-`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console `MailAdapter`: it has no real email service, provider secrets, or SendGrid integration. `.env.example` contains only non-secret local settings.
+On the admin page, `Send surprise drill` creates an in-memory attempt. It then writes a `[mail:stub]` line with the unique drill URL to the server console. It does not send email.
+
+To check a production build, stop the development server and run:
+
+```bash
+npm run build
+```
+
+## Privacy model
+
+Family Drill is a local demonstration, not a hosted service.
+
+### Stored data
+
+- The running Node.js process holds the `HouseholdAgreement`, `Member`, `Attempt`, and `DrillEvent` records in memory.
+- Scenario definitions are stored on disk in [`lib/scenarios.json`](lib/scenarios.json).
+- Restarting the server clears runtime changes. The seeded household, members, and attempt return on the next start.
+
+### Data the app does not collect
+
+- The app does not store passwords, card numbers, or bank information.
+- It does not use tracking pixels or collect email-open, preview, or prefetch telemetry.
+- A bare `GET /d/[token]` only displays the reveal. It does not count as engagement. The app records a score only after the member deliberately presses **I opened this from the email**, which sends a `POST` request.
+
+### Mail and secrets
+
+- This repository includes only the console `MailAdapter` stub. It does not connect to an email provider.
+- Provider secrets must not be committed to Git. [`.env.example`](.env.example) contains only non-secret local settings.
+
+### Household boundaries
+
+- Drills are practice for members covered by the household agreement. They do not require per-drill consent.
+- The app must not impersonate real brands, spoof a `From` address, or show credential forms.
+- See the in-app [safety rules](http://localhost:3000/docs/safety) for the full acceptable-use policy.
 
 ## Development checks
 
@@ -41,7 +73,7 @@ npm test
 npm run build
 ```
 
-The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all three scenarios fictional and educational.
+The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all scenarios fictional and educational.
 
 ## License
 
