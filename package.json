@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "verify:skill-launch": "node .cursor/skills/verify-family-drill/helpers/launch.mjs",
+    "verify:skill-doctor": "node .cursor/skills/verify-family-drill/helpers/doctor.mjs",
+    "verify:skill-drive": "node .cursor/skills/verify-family-drill/helpers/drive.mjs",
+    "verify:skill-cleanup": "node .cursor/skills/verify-family-drill/helpers/cleanup.mjs"
   },
   "dependencies": {
     "next": "^16.3.4",
