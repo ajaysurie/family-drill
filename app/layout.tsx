@@ -5,7 +5,7 @@ import "./styles.css";
 
 export const metadata: Metadata = {
   title: "Family Drill | Practice the scam before the real one hits",
-  description: "Fictional surprise scam drills for your household.",
+  description: "Bot-run scam drills with fictional messages and instant coaching.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
