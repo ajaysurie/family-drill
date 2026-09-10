@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 export default function StartDocsPage() { return <>
-  <span className="eyebrow">Start here</span><h1>Choose how to run Family Drill.</h1><p className="lede">Each option starts with one household agreement. Every drill uses a fictional organization and asks for no credentials.</p>
+  <span className="eyebrow">Start here</span><h1>Install the bot. Pick where Family Drill runs.</h1>
+  <p className="lede">The organizer verifies once and adds family emails in the bot. Relatives do not set anything up—they simply receive occasional surprise practice messages.</p>
   <div className="doc-options">
-    <section><b>01 · Hosted</b><h2>Use the hosted service</h2><p>Family Drill will host the app and mail delivery at familydrill.com and app.familydrill.com. Signup is not open yet. You can use the in-app household setup in this demo.</p><Link className="text-link" href="/household">Open household setup →</Link></section>
-    <section><b>02 · Self-host</b><h2>Run it yourself</h2><p>Clone the MIT-licensed repository and deploy the Next.js app. Configure your own ESP credentials for authenticated mail from a domain you control.</p><a className="text-link" href="https://github.com/ajaysurie/family-drill">View the repository ↗</a></section>
-    <section><b>03 · Grok Bot</b><h2>Schedule drills</h2><p>Use the template to schedule drills and provide coach tips. Give it an app URL. Do not give it mail-provider secrets.</p><Link className="text-link" href="/docs/bot">Read the bot instructions →</Link></section>
+    <section><b>01 · Hosted</b><h2>Use familydrill.com</h2><p>Install the bot and let the hosted Family Drill service handle the app and email delivery. The bot template is not published yet.</p><Link className="text-link" href="/docs/bot">See bot install instructions →</Link></section>
+    <section><b>02 · Self-host</b><h2>Run it on your domain</h2><p>Clone the MIT-licensed app, deploy it on your own domain, and connect your own email service provider. Then point the bot to your app.</p><a className="text-link" href="https://github.com/ajaysurie/family-drill">Clone the repository ↗</a></section>
   </div>
-  <div className="callout"><strong>Not sure?</strong> Try the in-app household setup. Self-host if you want to manage the app and mail delivery.</div>
+  <div className="callout"><strong>Either way, the flow is the same:</strong> install bot → verify organizer → add family emails → send surprise drills → review what landed.</div>
+  <h2>What happens after a click?</h2><p>The practice link opens an instant reveal and simple coaching. It never asks for or collects a password, Social Security number, card number, or other secret.</p>
   </>; }
