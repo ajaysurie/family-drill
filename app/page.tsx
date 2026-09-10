@@ -23,7 +23,7 @@ export default function Home() {
         <p className="trust-line">MIT <i/> open source <i/> household-only <i/> owned-domain mail</p>
       </div>
       <div className="hero-art">
-        <Image src="/brand/hero-coaching.svg" alt="A family calmly practicing how to spot a suspicious message together" width={720} height={620} priority />
+        <Image src="/brand/hero-coaching.jpg" alt="A family calmly practicing how to spot a suspicious message together" width={720} height={620} priority />
       </div>
     </section>
 
