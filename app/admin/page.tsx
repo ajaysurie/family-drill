@@ -10,8 +10,9 @@ export default async function AdminPage() {
   const household = await getHousehold(session.user.id); if (!household) redirect("/login");
   const members = await getMembers(session.user.id);
   const reports = new Map(await Promise.all(members.map(async (member) => [member.id, await getReport(session.user!.id!, member.id)] as const)));
-  return <section><span className="eyebrow">Organizer dashboard</span><h1>Family drill report</h1>
+  return <section><span className="eyebrow">Organizer tools · not the daily product</span><h1>Family drill report</h1>
     <p>The household agreement is <b>{household.status}</b>. Drill mail is written only to the server console. <Link href="/household">View the agreement and members</Link>.</p>
+
     <div className="table">
       {members.map((member) => { const report = reports.get(member.id)!; return <article className="row" key={member.id}>
         <div><h2>{member.name}</h2><p>{member.email}</p></div>
