@@ -15,7 +15,7 @@ export default function Home() {
       <div className="hero-copy">
         <span className="eyebrow">Scam practice for families</span>
         <h1>Send your family safe, surprise scam drills.</h1>
-        <p>Install the bot, add your family&apos;s emails, and see which practice messages they spot. Every click leads straight to a lesson—never a form asking for private information.</p>
+        <p>Install the bot, add your family&apos;s emails, and see which practice messages they spot. Every click opens a lesson. It never opens a form asking for private information.</p>
         <div className="actions">
           <Link className="button" href="/docs/bot">Install the Family Drill bot <span aria-hidden>→</span></Link>
           <Link className="button secondary" href="/d/drill-leo">Try a demo reveal</Link>
@@ -31,12 +31,12 @@ export default function Home() {
     </section>
 
     <section className="examples-section">
-      <span className="eyebrow">What your family sees</span><h2>Practice emails that look believable at a glance.</h2>
-      <p className="section-intro">Parcel trouble. A bank alert. Benefits paperwork. A tax refund. The organizations are invented, but the pressure tactics feel familiar.</p>
+      <span className="eyebrow">What your family sees</span><h2>Practice common scam tactics.</h2>
+      <p className="section-intro">Parcel trouble. A bank alert. Benefits paperwork. A tax refund. Every organization is fictional, and each message demonstrates a common pressure tactic.</p>
       <div className="inbox-grid">{scenarios.slice(0, 6).map((scenario) => <article className="inbox-card" key={scenario.id}>
         <div className="inbox-avatar" aria-hidden>{scenario.fromName.charAt(0)}</div><div><strong>{scenario.fromName}</strong><h3>{scenario.subject}</h3><p>{scenario.preview}</p></div>
       </article>)}</div>
-      <p className="example-note">These are fictional organizations—not real brands. Email copy can mimic a request for personal information, but the link always opens an instant reveal and coaching. Family Drill never collects passwords, Social Security numbers, or card details.</p>
+      <p className="example-note">These are fictional organizations, not real brands. Email copy can mimic a request for personal information, but the link always opens an instant reveal and coaching. Family Drill never collects passwords, Social Security numbers, or card details.</p>
     </section>
 
     <section>
@@ -47,7 +47,7 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="safety-strip"><div><span className="eyebrow">The safe part</span><h2>A click becomes a lesson, not a trap.</h2></div><p>The reveal explains the clues immediately. The bot reports sends and clicks so the organizer knows what to practice next. No real brand impersonation, forged senders, downloads, or credential collection. <Link href="/docs/safety">Read the safety rules →</Link></p></section>
-    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>The bot template is not public yet. See exactly how setup will work—without a fake install link.</p></div><Link className="button secondary" href="/docs/bot">Install the Family Drill bot →</Link></section>
+    <section className="safety-strip"><div><span className="eyebrow">The safe part</span><h2>Every click opens coaching.</h2></div><p>The reveal explains the clues immediately. The bot reports sends and clicks so the organizer knows what to practice next. No real brand impersonation, forged senders, downloads, or credential collection. <Link href="/docs/safety">Read the safety rules →</Link></p></section>
+    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>The bot template is not public yet. Read how setup will work. There is no install link until the template is published.</p></div><Link className="button secondary" href="/docs/bot">Install the Family Drill bot →</Link></section>
   </>;
 }
