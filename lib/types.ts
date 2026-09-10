@@ -15,7 +15,20 @@ export type DrillEvent = {
   occurredAt: string;
   summary: string;
 };
-export type Scenario = { id: string; fromName: string; subject: string; preview: string; lesson: [string, string, string] };
+export type Scenario = {
+  id: string;
+  fromName: string;
+  subject: string;
+  preview: string;
+  lesson: [string, string, string];
+  fromLocalPart?: string;
+  fromDomain?: string;
+  preheader?: string;
+  bodyParagraphs?: string[];
+  bodyHtml?: string;
+  ctaLabel?: string;
+  footerLines?: string[];
+};
 export type BotInstall = {
   active: boolean;
   organizerEmail: string | null;
