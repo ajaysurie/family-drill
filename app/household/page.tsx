@@ -12,7 +12,7 @@ const terms = [
 
 export default function HouseholdPage() {
   const household = getHousehold();
-  return <section><span className="eyebrow">Household agreement</span><h1>Agree once before surprise drills begin.</h1>
+  return <section><span className="eyebrow">Developer demo · not the daily product</span><h1>Household setup fixture</h1>
     <p>{household.organizerName} organizes this household's fictional surprise drills.</p>
     <article className="card"><h2>Plain-language terms</h2><ul>{terms.map((term) => <li key={term}>{term}</li>)}</ul>
       {household.status === "active" ? <p className="notice">Agreement active since {new Date(household.activatedAt!).toLocaleDateString()} · terms {household.termsVersion}</p> : <form action={activateAgreement}><button>Activate household agreement</button></form>}

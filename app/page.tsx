@@ -1,59 +1,45 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const drillSteps = [
-  ["01", "Agree once", "Set one plain-language household agreement."],
-  ["02", "Get a surprise drill", "A fictional message arrives without warning."],
-  ["03", "Open the link", "The reveal page appears. No private information is requested."],
-  ["04", "Check the clues", "The page explains what made the message suspicious."],
-  ["05", "Review the report", "The report counts sends and confirmed lure engagements."],
+const steps = [
+  ["1", "Install the bot", "The organizer verifies their account and chooses a simple practice schedule."],
+  ["2", "Let it run the drill", "The bot queues a surprise practice email and keeps the organizer informed."],
+  ["3", "Learn on the reveal", "The email opens a trusted page here that names the clues and offers calm coaching."],
 ];
 
 export default function Home() {
   return <>
     <section className="hero">
       <div className="hero-copy">
-        <span className="eyebrow">Scam drills for households</span>
-        <h1>Practice the scam before the real one hits.</h1>
-        <p>One household agreement. Surprise drills. Instant reveal. No real brands. No forged headers.</p>
+        <span className="eyebrow">Scam practice for families</span>
+        <h1>Practice spotting scams before one feels real.</h1>
+        <p>Install the Family Drill bot. It schedules surprise email drills, keeps the organizer informed, and helps the family learn what to check next time.</p>
         <div className="actions">
-          <Link className="button" href="/household">Start free <span aria-hidden>→</span></Link>
-          <a className="button secondary" href="https://github.com/ajaysurie/family-drill">View on GitHub <span aria-hidden>↗</span></a>
+          <Link className="button" href="/docs/bot">Get the bot <span aria-hidden>→</span></Link>
+          <Link className="text-link" href="/d/drill-leo">Try a demo reveal <span aria-hidden>→</span></Link>
         </div>
-        <p className="trust-line">MIT <i/> open source <i/> household-only <i/> owned-domain mail</p>
+        <p className="availability">The bot template is not published yet. The install page has the current status—no placeholder install link.</p>
       </div>
       <div className="hero-art">
         <Image src="/brand/hero-coaching.jpg" alt="A family calmly practicing how to spot a suspicious message together" width={720} height={620} priority />
       </div>
     </section>
 
-    <section className="split problem">
-      <div><span className="eyebrow">The problem</span><h2>Scam advice is easy to forget under pressure.</h2></div>
-      <div><p>Real scams arrive between dinner, homework, and the group chat. A yearly lecture cannot recreate that moment.</p><p>Family Drill turns "be careful" into specific steps. Notice the rush, stop, and check with a person you trust.</p></div>
+    <section className="why-reveal split">
+      <div><span className="eyebrow">Why this site exists</span><h2>A bot can send a link. This site makes the lesson trustworthy.</h2></div>
+      <div><p>Every practice email returns to a hosted Family Drill reveal on this domain. The page clearly says it was a drill, explains the warning signs, and never asks for private information.</p><Link className="text-link" href="/d/drill-leo">See the reveal your relative would see →</Link></div>
     </section>
 
     <section>
-      <span className="eyebrow">How it works</span><h2>Agree once. Run surprise drills.</h2>
-      <div className="steps">{drillSteps.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
+      <span className="eyebrow">How it works</span><h2>The bot does the routine work.</h2>
+      <div className="steps">{steps.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
     </section>
 
     <section className="truth-section">
-      <div><span className="eyebrow">What it does</span><h2>Runs fictional drills for your household.</h2><ul className="checks"><li>Fictional organizations and situations</li><li>Authenticated mail from a domain you own</li><li>Immediate reveal with coach tips</li><li>A household report of sends and engagements</li></ul></div>
-      <div className="not-card"><span className="eyebrow">What it is not</span><h3>This is not a phishing kit.</h3><ul><li>No brand impersonation</li><li>No forged From headers</li><li>No credential harvesting</li><li>No caller-ID spoofing</li><li>No downloads</li></ul></div>
+      <div><span className="eyebrow">Safe by design</span><h2>Practice the pressure, not the harm.</h2><ul className="checks"><li>Fictional organizations and situations</li><li>Authenticated delivery from a controlled domain</li><li>Organizer verification only</li><li>Immediate, shame-free coaching</li></ul></div>
+      <div className="not-card"><span className="eyebrow">Hard boundaries</span><h3>No impersonation. No secrets.</h3><ul><li>No real-brand or From spoofing</li><li>No credential forms</li><li>No mail-provider keys in the bot</li><li>No downloads</li></ul></div>
     </section>
 
-    <section>
-      <span className="eyebrow">Two ways to run it</span><h2>Use the hosted service or self-host.</h2>
-      <div className="run-grid">
-        <article className="run-card featured"><span className="tag">Coming soon</span><h3>Hosted</h3><p>The hosted service will use familydrill.com and app.familydrill.com. For now, try the household setup in this demo.</p><Link href="/household">Open demo <span aria-hidden>→</span></Link></article>
-        <article className="run-card"><span className="tag">MIT licensed</span><h3>Self-host</h3><p>Clone and deploy the project. Use your own legitimate mail provider and a domain you own.</p><a href="https://github.com/ajaysurie/family-drill">Clone on GitHub <span aria-hidden>↗</span></a></article>
-      </div>
-    </section>
-
-    <section className="bot-card">
-      <div><span className="eyebrow">Grok Bot template</span><h2>Use the bot for scheduling and coach tips.</h2><p>The optional template points to your Family Drill app URL. Keep ESP secrets in the app.</p></div><Link className="button secondary" href="/docs/bot">Bot instructions →</Link>
-    </section>
-
-    <section className="safety-strip"><div><span className="eyebrow">Safety rules</span><h2>Keep drills fictional and in the household.</h2></div><p>Households agree once. Drills use invented organizations. A miss opens the reveal and coach tips. <Link href="/docs/safety">Read the safety policy →</Link></p></section>
+    <section className="install-strip"><div><span className="eyebrow">Start with the bot</span><h2>Set the schedule once. Get coaching when it matters.</h2><p>The website hosts the reveal; the bot runs the practice.</p></div><Link className="button" href="/docs/bot">View install path →</Link></section>
   </>;
 }

@@ -11,9 +11,15 @@ const endpoints = [
 ];
 
 export default function BotDocsPage() { return <>
-  <span className="eyebrow">Coach bot API</span><h1>A bot-first contract for family drills.</h1>
-  <p className="lede">The coach bot owns the roster and decides what to request. Family Drill owns delivery, quiet hours, rate limits, and reveal pages; the bot never handles mail-provider credentials.</p>
+  <span className="eyebrow">Bot install path</span><h1>Install the bot to run Family Drill.</h1>
+  <p className="lede">The bot is the product's home: it owns the roster, schedule, organizer updates, and coaching. Family Drill owns delivery, quiet hours, rate limits, and the trusted reveal pages; the bot never handles mail-provider credentials.</p>
   <div className="status-pill">Template not published</div>
+  <h2>What setup will look like</h2><ol className="numbered">
+    <li><span>1</span><div><strong>Install the Family Drill bot</strong><p>The official template link will appear here after it is published. There is no placeholder install URL.</p></div></li>
+    <li><span>2</span><div><strong>Verify the organizer</strong><p>Only the person organizing the drills verifies an account. Relatives do not complete a separate verification flow.</p></div></li>
+    <li><span>3</span><div><strong>Choose a schedule</strong><p>The bot requests surprise drills, shares status with the organizer, and brings back reports and coaching.</p></div></li>
+    <li><span>4</span><div><strong>Use the hosted reveal</strong><p>Each practice link opens a Family Drill page on this site so relatives know where the lesson comes from.</p></div></li>
+  </ol>
   <h2>Install and authentication</h2>
   <p>Start local organizer verification with <code>POST /api/bot/install/start</code> and <code>{'{"email":"organizer@example.test"}'}</code>. This demo completes the magic-link step immediately and returns <code>installId</code> and <code>botToken</code>. In a configured stub, <code>FAMILY_DRILL_BOT_TOKEN</code> is the install-scoped token.</p>
   <p>Send <code>Authorization: Bearer &lt;bot_token&gt;</code> or <code>X-Family-Drill-Token: &lt;bot_token&gt;</code>. This token is not an ESP key. Requests with a bad token receive <code>401</code>; sends and roster writes are rejected while the install is inactive or the household is paused.</p>

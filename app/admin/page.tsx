@@ -4,7 +4,7 @@ import { sendDrill } from "./actions";
 
 export default function AdminPage() {
   const household = getHousehold();
-  return <section><span className="eyebrow">Local demo</span><h1>Family drill report</h1>
+  return <section><span className="eyebrow">Developer demo · not the daily product</span><h1>Family drill report fixture</h1>
     <p>The household agreement is <b>{household.status}</b>. This demo sends mail only to the console. <Link href="/household">View the agreement and members</Link>.</p>
     <div className="table">
       {getMembers().map((member) => { const report = getReport(member.id); return <article className="row" key={member.id}>
