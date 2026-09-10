@@ -1,5 +1,5 @@
 const endpoints = [
-  ["POST", "/api/bot/install/start", "Verify an organizer email in the local demo and issue an install ID plus bot token."],
+  ["POST", "/api/bot/install/start", "Use the verified organizer session to issue an install ID plus bot token."],
   ["GET", "/api/bot/install", "Read install state, capabilities, organizer email, and pause state."],
   ["GET · POST", "/api/bot/members", "List the bot-owned roster or add a member with name and email."],
   ["PATCH · DELETE", "/api/bot/members/:id", "Update or remove a roster member."],
@@ -15,7 +15,7 @@ export default function BotDocsPage() { return <>
   <p className="lede">The coach bot owns the roster and decides what to request. Family Drill owns delivery, quiet hours, rate limits, and reveal pages; the bot never handles mail-provider credentials.</p>
   <div className="status-pill">Template not published</div>
   <h2>Install and authentication</h2>
-  <p>Start local organizer verification with <code>POST /api/bot/install/start</code> and <code>{'{"email":"organizer@example.test"}'}</code>. This demo completes the magic-link step immediately and returns <code>installId</code> and <code>botToken</code>. In a configured stub, <code>FAMILY_DRILL_BOT_TOKEN</code> is the install-scoped token.</p>
+  <p>After the organizer signs in by magic link, call <code>POST /api/bot/install/start</code> in that authenticated browser session. The endpoint uses the verified session identity—not a submitted email—and returns <code>installId</code> and a database-backed <code>botToken</code>.</p>
   <p>Send <code>Authorization: Bearer &lt;bot_token&gt;</code> or <code>X-Family-Drill-Token: &lt;bot_token&gt;</code>. This token is not an ESP key. Requests with a bad token receive <code>401</code>; sends and roster writes are rejected while the install is inactive or the household is paused.</p>
   <h2>Endpoints</h2>
   <div className="card-grid">{endpoints.map(([method, path, description]) => <article className="card" key={path}><strong><code>{method} {path}</code></strong><p>{description}</p></article>)}</div>

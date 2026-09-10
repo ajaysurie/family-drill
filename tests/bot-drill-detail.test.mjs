@@ -6,8 +6,8 @@ const route = await readFile(new URL("../app/api/bot/drills/[id]/route.ts", impo
 const store = await readFile(new URL("../lib/store.ts", import.meta.url), "utf8");
 
 test("bot drill detail derives deliberate lure engagement from recorded events", () => {
-  assert.match(store, /event\.attemptId === attemptId && event\.type === "lure\.engaged"/);
-  assert.match(route, /const lureDeliberate = hasLureEngagement\(drill\.id\)/);
+  assert.match(store, /eq\(drillEvents\.attemptId, attemptId\).*eq\(drillEvents\.type, "lure\.engaged"\)/);
+  assert.match(route, /const lureDeliberate = await hasLureEngagement\(drill\.id\)/);
   assert.match(route, /lureEngagementMethod: lureDeliberate \? "explicit_button" : null/);
   assert.doesNotMatch(route, /lureDeliberate:\s*true/);
 });
