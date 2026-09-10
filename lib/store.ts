@@ -31,7 +31,8 @@ export function getMembers() { return members; }
 export function addMember(name: string, email: string) {
   const member: Member = { id: crypto.randomUUID(), name: name.trim(), email: email.trim().toLowerCase(), householdId: household.id };
   if (!member.name || !member.email) return; members.push(member); return member;
-}
+}export function hasLureEngagement(attemptId: string) { return events.some((event) => event.attemptId === attemptId && event.type === "lure.engaged"); }
+
 export function updateMember(id: string, changes: { name?: string; email?: string }) {
   const member = members.find((item) => item.id === id); if (!member) return;
   const name = changes.name === undefined ? member.name : changes.name.trim();
@@ -42,6 +43,7 @@ export function updateMember(id: string, changes: { name?: string; email?: strin
 export function deleteMember(id: string) { const index = members.findIndex((item) => item.id === id); return index < 0 ? undefined : members.splice(index, 1)[0]; }
 export function findAttempt(token: string) { return attempts.find((attempt) => attempt.drillToken === token); }
 export function findAttemptById(id: string) { return attempts.find((attempt) => attempt.id === id); }
+
 
 function addEvent(attempt: Attempt, type: DrillEvent["type"], summary: string) {
   if (!events.some((event) => event.attemptId === attempt.id && event.type === type)) events.push({ id: crypto.randomUUID(), attemptId: attempt.id, type, occurredAt: new Date().toISOString(), summary });
