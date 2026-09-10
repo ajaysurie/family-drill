@@ -1,23 +1,72 @@
 [
   {
+    "id": "parcel-redelivery",
+    "fromName": "Puddlejump Parcel Co.",
+    "subject": "We could not leave your family parcel",
+    "preview": "Choose a new delivery time today using the practice link.",
+    "lesson": ["Unexpected delivery urgency is a reason to pause.", "Check purchases in the shop or carrier site you normally use.", "Do not pay a surprise redelivery fee from a message link."]
+  },
+  {
+    "id": "payment-failed",
+    "fromName": "Copper Kite Family Bank",
+    "subject": "A household payment did not go through",
+    "preview": "Review the fictional payment before evening to prevent a hold.",
+    "lesson": ["A failed-payment warning can create false urgency.", "Check activity through the known app or number on your statement.", "Never share financial details after following an unexpected link."]
+  },
+  {
+    "id": "benefits-update",
+    "fromName": "Northstar Benefits Cooperative",
+    "subject": "Your family benefits need an update",
+    "preview": "Confirm the fictional household update by Friday to avoid a delay.",
+    "lesson": ["A deadline about important benefits is designed to feel pressing.", "Contact the program through paperwork or a number you already trust.", "Do not provide private family information through a surprise message."]
+  },
+  {
+    "id": "refund-bait",
+    "fromName": "Civic Lantern Tax Help",
+    "subject": "A larger refund may be waiting for your household",
+    "preview": "Check the fictional refund notice before the review window closes.",
+    "lesson": ["Unexpected money and a short deadline are both warning signs.", "Use a known tax professional or official site to verify a notice.", "Do not provide tax or identity information from an email link."]
+  },
+  {
+    "id": "account-security",
+    "fromName": "Bright Badger Tech Support",
+    "subject": "New activity detected on your family account",
+    "preview": "Review the fictional device now before access is restricted.",
+    "lesson": ["Security alerts can use fear to rush a decision.", "Open the service yourself and review its security page.", "Never give a caller remote access or share a security code."]
+  },
+  {
+    "id": "missed-voicemail",
+    "fromName": "Chirrup Family Voicemail",
+    "subject": "You missed a message about your child",
+    "preview": "Play the fictional urgent voicemail using the practice link.",
+    "lesson": ["A vague message about family can provoke a quick reaction.", "Call the known person or organization directly to check.", "Avoid unfamiliar links claiming to play a voicemail."]
+  },
+  {
+    "id": "pharmacy-pickup",
+    "fromName": "Juniper Jar Pharmacy",
+    "subject": "A family prescription is waiting for pickup",
+    "preview": "Confirm the fictional pickup today before it is returned.",
+    "lesson": ["Health-related deadlines deserve a calm, careful check.", "Call the pharmacy using a number you already have.", "Do not disclose health or payment information through a message link."]
+  },
+  {
+    "id": "utility-past-due",
+    "fromName": "Sunbeam Home Utilities",
+    "subject": "Past-due notice for your household service",
+    "preview": "Review the fictional balance now to prevent an evening shutoff.",
+    "lesson": ["A shutoff threat uses fear and urgency to demand action.", "Check your paper bill or the utility site you normally use.", "Do not send money through a payment method named in a surprise message."]
+  },
+  {
     "id": "garden-club",
     "fromName": "Pinecone Garden Circle",
-    "subject": "Vote for this month's mystery flower",
-    "preview": "The vote closes unusually soon. Follow the practice link to see the clues.",
-    "lesson": ["Urgent language is a reason to stop and check.", "Ask whether you expected the message and know the sender.", "Contact the organizer another way before opening a surprising link."]
+    "subject": "The family garden meetup moved this afternoon",
+    "preview": "See the fictional new location before your family leaves home.",
+    "lesson": ["A last-minute plan change is a reason to pause.", "Confirm the location with an organizer you know.", "Do not share family plans after following an unexpected link."]
   },
   {
     "id": "book-cart",
     "fromName": "Moonbeam Book Cart",
-    "subject": "A reserved story needs your confirmation",
-    "preview": "A fictional reservation may disappear today unless you follow the practice link.",
-    "lesson": ["Stop when a message says you must act now.", "Check the sender and link destination before you act.", "Open the known site yourself instead of using an unexpected link."]
-  },
-  {
-    "id": "picnic-table",
-    "fromName": "Blue Acorn Picnic Club",
-    "subject": "The picnic table changed at the last minute",
-    "preview": "See the fictional new meeting spot using the practice link.",
-    "lesson": ["A last-minute change is a reason to check the details.", "Confirm surprising plans with someone you know.", "Do not provide sensitive information after following an email link."]
+    "subject": "Your child's reserved story expires today",
+    "preview": "Keep the fictional reservation by following the practice link.",
+    "lesson": ["A small deadline can still be used to rush you.", "Check reservations through the library or shop you normally use.", "Ask whether you expected the message before opening its link."]
   }
 ]
