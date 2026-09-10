@@ -1,9 +1,9 @@
+import { auth } from "../../../../../auth";
 import { verifyInstall } from "../../../../../lib/store";
 
-export async function POST(request: Request) {
-  let body: unknown; try { body = await request.json(); } catch { return Response.json({ error: "Invalid JSON" }, { status: 400 }); }
-  const email = (body as Record<string, unknown> | null)?.email;
-  if (typeof email !== "string" || !email.includes("@")) return Response.json({ error: "A valid organizer email is required" }, { status: 400 });
-  // Local-only stand-in for a magic-link round trip: pending verification completes immediately.
-  return Response.json(verifyInstall(email), { status: 201 });
+export async function POST() {
+  const session = await auth();
+  if (!session?.user?.id || !session.user.email) return Response.json({ error: "Verified organizer session required" }, { status: 401 });
+  const install = await verifyInstall(session.user.id);
+  return install ? Response.json(install, { status: 201 }) : Response.json({ error: "Organizer household not found" }, { status: 404 });
 }

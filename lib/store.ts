@@ -1,87 +1,37 @@
+import { and, asc, count, eq, getTableColumns, gt, sql } from "drizzle-orm";
 import scenariosData from "./scenarios.json";
-import type { Attempt, BotInstall, DrillEvent, HouseholdAgreement, Member, Scenario } from "./types";
+import { db } from "./db";
+import { attempts, botInstalls, drillEvents, householdAgreements, members, organizers } from "./schema";
+import type { Attempt, BotInstall, DrillEvent, HouseholdAgreement, Scenario } from "./types";
 
 export const scenarios = scenariosData as Scenario[];
-const household: HouseholdAgreement = { id: "household-demo", organizerName: "Alex", termsVersion: "2026-09-01", status: "active", activatedAt: "2026-09-01T12:00:00.000Z" };
-const members: Member[] = [
-  { id: "maya", name: "Maya", email: "maya@example.test", householdId: household.id },
-  { id: "leo", name: "Leo", email: "leo@example.test", householdId: household.id },
-  { id: "ruth", name: "Ruth", email: "ruth@example.test", householdId: household.id }
-];
-const attempts: Attempt[] = [{ id: "attempt-leo", memberId: "leo", scenarioId: "garden-club", drillToken: "drill-leo", createdAt: "2026-09-02T12:00:00.000Z" }];
-const events: DrillEvent[] = [];
-const install: BotInstall = {
-  active: Boolean(process.env.FAMILY_DRILL_BOT_TOKEN), organizerEmail: process.env.FAMILY_DRILL_ORGANIZER_EMAIL ?? null,
-  caps: ["members:read", "members:write", "drills:send", "events:read", "household:pause"], householdPaused: false,
-  token: process.env.FAMILY_DRILL_BOT_TOKEN
-};
+const caps = ["members:read", "members:write", "drills:send", "events:read", "household:pause"];
+const agreement = (row: typeof householdAgreements.$inferSelect & { organizerName: string | null }): HouseholdAgreement => ({ id: row.id, organizerName: row.organizerName ?? "Organizer", termsVersion: row.termsVersion, status: row.status, activatedAt: row.activatedAt?.toISOString() });
+const attempt = (row: typeof attempts.$inferSelect): Attempt => ({ ...row, createdAt: row.createdAt.toISOString(), scheduledFor: row.scheduledFor?.toISOString() });
+const publicInstall = (row: typeof botInstalls.$inferSelect & { organizerEmail?: string | null }): Omit<BotInstall, "token"> => ({ active: Boolean(row.active), organizerEmail: row.organizerEmail ?? null, caps, householdPaused: Boolean(row.householdPaused) });
 
-export function getHousehold() { return household; }
-export function activateHousehold() { household.status = "active"; household.activatedAt ??= new Date().toISOString(); return household; }
-export function getInstall(): Omit<BotInstall, "token"> { const { token: _token, ...publicInstall } = install; return publicInstall; }
-export function verifyInstall(email: string) {
-  install.active = true; install.organizerEmail = email.trim(); install.householdPaused = false; install.token = crypto.randomUUID();
-  return { ...getInstall(), installId: household.id, botToken: install.token };
-}
-export function authenticateBot(token: string | null) { return Boolean(token && install.active && token === install.token); }
-export function setPaused(paused: boolean) { install.householdPaused = paused; return getInstall(); }
-export function canOperate() { return install.active && !install.householdPaused && household.status === "active"; }
+export async function getHousehold(organizerId: string) { const [row] = await db.select({ ...getTableColumns(householdAgreements), organizerName: organizers.name }).from(householdAgreements).innerJoin(organizers, eq(householdAgreements.organizerId, organizers.id)).where(eq(householdAgreements.organizerId, organizerId)); return row ? agreement(row) : undefined; }
+export async function activateHousehold(organizerId: string) { await db.update(householdAgreements).set({ status: "active", activatedAt: new Date() }).where(eq(householdAgreements.organizerId, organizerId)); return getHousehold(organizerId); }
+export async function getMembers(organizerId: string) { return db.select({ id: members.id, name: members.name, email: members.email, householdId: members.householdId }).from(members).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).orderBy(members.name); }
+export async function addMember(organizerId: string, name: string, email: string) { const cleanName = name.trim(), cleanEmail = email.trim().toLowerCase(); if (!cleanName || !cleanEmail) return; const [household] = await db.select({ id: householdAgreements.id }).from(householdAgreements).where(eq(householdAgreements.organizerId, organizerId)); if (!household) return; const [created] = await db.insert(members).values({ name: cleanName, email: cleanEmail, householdId: household.id }).returning(); return created; }
+export async function updateMember(organizerId: string, id: string, changes: { name?: string; email?: string }) { const values = { ...(changes.name !== undefined && { name: changes.name.trim() }), ...(changes.email !== undefined && { email: changes.email.trim().toLowerCase() }) }; if (("name" in values && !values.name) || ("email" in values && !values.email)) return; const [row] = await db.update(members).set(values).from(householdAgreements).where(and(eq(members.id, id), eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).returning(); return row; }
+export async function deleteMember(organizerId: string, id: string) { const owned = (await getMembers(organizerId)).some((member) => member.id === id); if (!owned) return; const [row] = await db.delete(members).where(eq(members.id, id)).returning(); return row; }
 
-export function getMembers() { return members; }
-export function addMember(name: string, email: string) {
-  const member: Member = { id: crypto.randomUUID(), name: name.trim(), email: email.trim().toLowerCase(), householdId: household.id };
-  if (!member.name || !member.email) return; members.push(member); return member;
-}export function hasLureEngagement(attemptId: string) { return events.some((event) => event.attemptId === attemptId && event.type === "lure.engaged"); }
+async function installForToken(token: string) { const [row] = await db.select({ install: botInstalls, organizerId: householdAgreements.organizerId, organizerEmail: organizers.email }).from(botInstalls).innerJoin(householdAgreements, eq(botInstalls.householdId, householdAgreements.id)).innerJoin(organizers, eq(householdAgreements.organizerId, organizers.id)).where(eq(botInstalls.token, token)); return row; }
+export async function authenticateBot(token: string | null) { if (!token) return; const row = await installForToken(token); return row?.install.active ? { organizerId: row.organizerId, token } : undefined; }
+export async function getInstall(token: string) { const row = await installForToken(token); return row ? publicInstall({ ...row.install, organizerEmail: row.organizerEmail }) : undefined; }
+export async function verifyInstall(organizerId: string) { const household = await getHousehold(organizerId); if (!household) return; const token = crypto.randomUUID(); const [row] = await db.insert(botInstalls).values({ householdId: household.id, token, active: 1, householdPaused: 0 }).onConflictDoUpdate({ target: botInstalls.householdId, set: { token, active: 1, householdPaused: 0 } }).returning(); return { ...publicInstall(row), installId: row.id, botToken: token }; }
+export async function setPaused(organizerId: string, paused: boolean) { const [row] = await db.update(botInstalls).set({ householdPaused: paused ? 1 : 0 }).from(householdAgreements).where(and(eq(botInstalls.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).returning(); return row ? publicInstall(row) : undefined; }
+export async function canOperate(organizerId: string) { const [row] = await db.select({ active: botInstalls.active, paused: botInstalls.householdPaused, status: householdAgreements.status }).from(botInstalls).innerJoin(householdAgreements, eq(botInstalls.householdId, householdAgreements.id)).where(eq(householdAgreements.organizerId, organizerId)); return Boolean(row?.active && !row.paused && row.status === "active"); }
 
-export function updateMember(id: string, changes: { name?: string; email?: string }) {
-  const member = members.find((item) => item.id === id); if (!member) return;
-  const name = changes.name === undefined ? member.name : changes.name.trim();
-  const email = changes.email === undefined ? member.email : changes.email.trim().toLowerCase();
-  if (!name || !email) return;
-  member.name = name; member.email = email; return member;
-}
-export function deleteMember(id: string) { const index = members.findIndex((item) => item.id === id); return index < 0 ? undefined : members.splice(index, 1)[0]; }
-export function findAttempt(token: string) { return attempts.find((attempt) => attempt.drillToken === token); }
-export function findAttemptById(id: string) { return attempts.find((attempt) => attempt.id === id); }
-
-
-function addEvent(attempt: Attempt, type: DrillEvent["type"], summary: string) {
-  if (!events.some((event) => event.attemptId === attempt.id && event.type === type)) events.push({ id: crypto.randomUUID(), attemptId: attempt.id, type, occurredAt: new Date().toISOString(), summary });
-}
-function nextAllowedTime(requested?: string) {
-  const date = requested ? new Date(requested) : new Date();
-  if (Number.isNaN(date.valueOf())) return;
-  // Household quiet hours are 21:00–08:00 UTC in this local stub.
-  if (date.getUTCHours() >= 21) { date.setUTCDate(date.getUTCDate() + 1); date.setUTCHours(8, 0, 0, 0); }
-  else if (date.getUTCHours() < 8) date.setUTCHours(8, 0, 0, 0);
-  return date.toISOString();
-}
-export function createBotDrill(memberId?: string, scenarioId: string = "surprise", sendAt?: string) {
-  if (!canOperate()) return { error: install.householdPaused ? "household_paused" : "install_inactive" } as const;
-  const recent = attempts.filter((item) => Date.now() - new Date(item.createdAt).valueOf() < 3_600_000);
-  if (recent.length >= 5) return { error: "rate_limited" } as const;
-  const member = memberId ? members.find((item) => item.id === memberId) : members[attempts.length % members.length];
-  if (!member) return { error: "member_not_found" } as const;
-  const scenario = scenarioId === "surprise" ? scenarios[attempts.length % scenarios.length] : scenarios.find((item) => item.id === scenarioId);
-  if (!scenario) return { error: "scenario_not_found" } as const;
-  const scheduledFor = nextAllowedTime(sendAt); if (!scheduledFor) return { error: "invalid_send_at" } as const;
-  const attempt: Attempt = { id: crypto.randomUUID(), memberId: member.id, scenarioId: scenario.id, drillToken: crypto.randomUUID(), createdAt: new Date().toISOString(), scheduledFor };
-  attempts.push(attempt); addEvent(attempt, "drill.sent", `Fictional ${scenario.subject} drill queued for ${member.name}.`);
-  console.info(`[family-drill] queued fictional drill ${attempt.id} for ${member.email} at ${scheduledFor}`);
-  return { attempt, member, scenario };
-}
-export function sendAttempt(memberId: string, scenarioId: string) {
-  const result = createBotDrill(memberId, scenarioId);
-  return "error" in result ? undefined : result;
-}
-export function recordReveal(token: string) { const attempt = findAttempt(token); if (attempt) addEvent(attempt, "drill.revealed", "The drill lesson was revealed."); return attempt; }
-export function recordLureOpened(token: string) { const attempt = findAttempt(token); if (attempt) addEvent(attempt, "lure.engaged", "The member deliberately confirmed opening the practice lure."); return attempt; }
-export function getBotEvents(since?: string) {
-  const index = since ? events.findIndex((event) => event.id === since) : -1;
-  const cutoff = since && index < 0 ? Date.parse(since) : NaN;
-  return events.filter((event, eventIndex) => eventIndex > index && (Number.isNaN(cutoff) || Date.parse(event.occurredAt) > cutoff)).map((event) => {
-    const attempt = findAttemptById(event.attemptId)!; const member = members.find((item) => item.id === attempt.memberId);
-    return { cursor: event.id, type: event.type, at: event.occurredAt, drillId: attempt.id, memberName: member?.name ?? "Former household member", summary: event.summary };
-  });
-}
-export function getReport(memberId: string) { const relevant = attempts.filter((item) => item.memberId === memberId); return { sent: relevant.length, lureEngagements: events.filter((event) => relevant.some((item) => item.id === event.attemptId) && event.type === "lure.engaged").length }; }
+export async function findAttempt(token: string) { const [row] = await db.select().from(attempts).where(eq(attempts.drillToken, token)); return row ? attempt(row) : undefined; }
+export async function findAttemptById(organizerId: string, id: string) { const [row] = await db.select({ attempt: attempts }).from(attempts).innerJoin(members, eq(attempts.memberId, members.id)).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).where(eq(attempts.id, id)); return row ? attempt(row.attempt) : undefined; }
+async function addEvent(found: Attempt, type: DrillEvent["type"], summary: string) { await db.insert(drillEvents).values({ attemptId: found.id, type, summary }).onConflictDoNothing(); }
+export async function hasLureEngagement(attemptId: string) { const [row] = await db.select({ total: count() }).from(drillEvents).where(and(eq(drillEvents.attemptId, attemptId), eq(drillEvents.type, "lure.engaged"))); return Boolean(row?.total); }
+function nextAllowedTime(requested?: string) { const date = requested ? new Date(requested) : new Date(); if (Number.isNaN(date.valueOf())) return; if (date.getUTCHours() >= 21) { date.setUTCDate(date.getUTCDate() + 1); date.setUTCHours(8, 0, 0, 0); } else if (date.getUTCHours() < 8) date.setUTCHours(8, 0, 0, 0); return date; }
+export async function createBotDrill(organizerId: string, memberId?: string, scenarioId = "surprise", sendAt?: string) { if (!await canOperate(organizerId)) return { error: "install_inactive_or_paused" } as const; const [{ total }] = await db.select({ total: count() }).from(attempts).innerJoin(members, eq(attempts.memberId, members.id)).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).where(gt(attempts.createdAt, new Date(Date.now() - 3_600_000))); if (total >= 5) return { error: "rate_limited" } as const; const householdMembers = await getMembers(organizerId); const member = memberId ? householdMembers.find((item) => item.id === memberId) : householdMembers[total % householdMembers.length]; if (!member) return { error: "member_not_found" } as const; const scenario = scenarioId === "surprise" ? scenarios[total % scenarios.length] : scenarios.find((item) => item.id === scenarioId); if (!scenario) return { error: "scenario_not_found" } as const; const scheduledFor = nextAllowedTime(sendAt); if (!scheduledFor) return { error: "invalid_send_at" } as const; const [created] = await db.insert(attempts).values({ memberId: member.id, scenarioId: scenario.id, scheduledFor }).returning(); const result = attempt(created); await addEvent(result, "drill.sent", `Fictional ${scenario.subject} drill queued for ${member.name}.`); console.info(`[family-drill] queued fictional drill ${result.id} for ${member.email} at ${scheduledFor.toISOString()}`); return { attempt: result, member, scenario }; }
+export async function sendAttempt(organizerId: string, memberId: string, scenarioId: string) { const result = await createBotDrill(organizerId, memberId, scenarioId); return "error" in result ? undefined : result; }
+export async function recordReveal(token: string) { const found = await findAttempt(token); if (found) await addEvent(found, "drill.revealed", "The drill lesson was revealed."); return found; }
+export async function recordLureOpened(token: string) { const found = await findAttempt(token); if (found) await addEvent(found, "lure.engaged", "The member deliberately confirmed opening the practice lure."); return found; }
+export async function getBotEvents(organizerId: string, since?: string) { const rows = await db.select({ event: drillEvents, attempt: attempts, memberName: members.name }).from(drillEvents).innerJoin(attempts, eq(drillEvents.attemptId, attempts.id)).innerJoin(members, eq(attempts.memberId, members.id)).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).orderBy(asc(drillEvents.occurredAt)); const index = since ? rows.findIndex(({ event }) => event.id === since) : -1; const cutoff = since && index < 0 ? Date.parse(since) : NaN; return rows.filter(({ event }, eventIndex) => eventIndex > index && (Number.isNaN(cutoff) || event.occurredAt.valueOf() > cutoff)).map(({ event, attempt: found, memberName }) => ({ cursor: event.id, type: event.type, at: event.occurredAt.toISOString(), drillId: found.id, memberName, summary: event.summary })); }
+export async function getReport(organizerId: string, memberId: string) { const [row] = await db.select({ sent: sql<number>`count(distinct ${attempts.id})::int`, lureEngagements: sql<number>`count(distinct ${drillEvents.id}) filter (where ${drillEvents.type} = 'lure.engaged')::int` }).from(members).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).leftJoin(attempts, eq(attempts.memberId, members.id)).leftJoin(drillEvents, eq(drillEvents.attemptId, attempts.id)).where(eq(members.id, memberId)); return row ?? { sent: 0, lureEngagements: 0 }; }

@@ -1,6 +1,6 @@
 # Family Drill
 
-Family Drill is a small, local, open-source app for **household-agreed surprise email drills**. A family accepts one plain-language agreement. An organizer can then send household members unexpected, fictional messages. Opening a drill link shows the reveal and coach tips immediately.
+Family Drill is an open-source web app for **household-agreed surprise email drills**. A family accepts one plain-language agreement. An organizer can then send household members unexpected, fictional messages. Opening a drill link shows the reveal and coach tips immediately.
 
 This is practice under a prior household agreement. It is not covert phishing, surveillance, or brand impersonation. The app does not imitate real brands, relatives, banks, or government agencies. It does not request credentials or financial details, use tracking pixels, include attachments, or redirect to an external drill page. Reports count only an explicit button POST. A raw GET, email open, preview, or scanner prefetch does not count.
 
@@ -13,11 +13,7 @@ This is practice under a prior household agreement. It is not covert phishing, s
 5. The member explicitly chooses **I opened this from the email** before a lure engagement is recorded.
 6. The family reviews the clues after a miss. Any member can ask the organizer to stop.
 
-The MVP uses an in-memory seed store with one active household, three members, and one attempt. Changes reset when the server restarts.
-
-## Privacy
-
-This repository runs locally and does not connect to a hosted Family Drill service. Household members, agreement status, and drill results stay in the server's in-memory store. The app has no database, analytics, tracking pixels, or third-party mail connection. The console mail stub prints each drill link in the terminal instead of sending email.
+Organizer identities, agreements, members, attempts, and explicit drill events are persisted in Vercel Postgres (Neon) through Drizzle. Relatives never create accounts: their unguessable drill-token links remain public.
 
 ## Quickstart
 
@@ -26,36 +22,36 @@ Requires Node.js 20.9 or newer.
 ```bash
 cp .env.example .env.local
 npm install
+# Apply db/migrations/0001_foundation.sql to the database.
+# Optionally apply db/seed.sql for local demo data.
 npm test
 npm run dev
 ```
 
+Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. Sign in at `/login` with an organizer email. Copy the `[auth:magic-link]` URL from the server console. Organizer login mail is intentionally console-stubbed until an ESP is selected; do not configure real delivery credentials.
+
 Open [http://localhost:3000](http://localhost:3000), then try:
 
-- `/`: marketing overview and links to the setup and safety pages
-- `/household`: agreement status, plain-language terms, member list, and add-member form
-- `/admin`: surprise-drill controls and sent-versus-deliberate-engagement reports
+- `/household`: organizer-only agreement status, plain-language terms, member list, and add-member form
+- `/admin`: organizer-only surprise-drill controls and sent-versus-deliberate-engagement reports
 - `/d/drill-leo`: seeded immediate reveal. A bare GET does not record engagement.
 
-`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console `MailAdapter`: it has no real email service, provider secrets, or SendGrid integration. `.env.example` contains only non-secret local settings.
+The home page, `/docs/*`, and `/d/[token]` are public. Auth.js gates `/household` and `/admin`; their server actions also require the organizer session, and database queries scope records to that organizer.
 
-## Brand assets
+`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console drill `MailAdapter`. Organizer magic links and drills are both console-only stubs until an ESP is selected.
 
-The original artwork lives in [`public/brand`](public/brand) as hand-authored SVG text files. The house mark and coaching illustration use the interface palette (`#17312b` ink, `#176b52` forest green, `#fbfaf5` paper, and `#dff3e9` mint) and depict only fictional, household-focused practice. Keep brand contributions as text-based SVG—do not add PNG, JPEG, WebP, real-company logos, or credential-entry imagery.
+## Privacy model
+
+The database stores the organizer email identity, household agreement, relative names and email addresses, attempts, and deliberate engagement events. Auth.js stores expiring verification tokens and organizer sessions. Relative links use random tokens and need no relative account. A GET only reveals the lesson; it never records engagement. Drills collect no credentials, payment details, open pixels, attachments, or form answers.
 
 ## Development checks
 
 ```bash
 npm test
 npm run build
-npm start
 ```
 
-`npm run build` creates the production build. Run `npm start` after it and check `/`, `/household`, and `/admin` at [http://localhost:3000](http://localhost:3000). The production server still uses the in-memory store and console mail stub; it does not make the MVP persistent or send real email.
-
-The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all three scenarios fictional and educational.
-
-For real-server verification, launch the in-repo skill with `npm run verify:skill-launch`, then run `npm run verify:skill-doctor` and (when Playwright Chromium is available) `npm run verify:skill-drive`; finish with `npm run verify:skill-cleanup`. The full workflow and verified surfaces are documented in `.cursor/skills/verify-family-drill/SKILL.md`.
+The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all scenarios fictional and educational.
 
 ## License
 
