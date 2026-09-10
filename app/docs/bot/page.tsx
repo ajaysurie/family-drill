@@ -1,6 +1,17 @@
+const endpoints = [
+  ["GET", "/api/bot/health", "Check that the app is up and whether the household agreement is active."],
+  ["GET", "/api/bot/members", "List only household member IDs and display names for schedule picks."],
+  ["POST", "/api/bot/schedule", "Record a schedule intent for memberId and scenarioId (or surprise), with optional quietHours."],
+  ["GET", "/api/bot/last-attempt", "Read the latest member display name, scenario clues, and coaching outcome."],
+];
+
 export default function BotDocsPage() { return <>
-  <span className="eyebrow">Grok Bot template</span><h1>Schedule drills and review the lesson.</h1><p className="lede">The planned bot template can set a schedule, start an approved drill through Family Drill, and provide coach tips afterward.</p>
+  <span className="eyebrow">Coach bot API</span><h1>Schedule drills and review the lesson.</h1><p className="lede">This thin API lets a future coach bot request approved work. Family Drill owns delivery; the bot never handles mail-provider credentials.</p>
   <div className="status-pill">Template placeholder · not yet published</div>
-  <h2>Setup</h2><ol className="numbered"><li><span>1</span><div><strong>Run a Family Drill app</strong><p>Use the hosted service or deploy the open-source app yourself.</p></div></li><li><span>2</span><div><strong>Give the bot your app URL</strong><p>Set the future <code>FAMILY_DRILL_APP_URL</code> instruction to your trusted HTTPS app address.</p></div></li><li><span>3</span><div><strong>Keep delivery in the app</strong><p>The bot calls the app's approved workflow. It does not store, request, or embed ESP API keys.</p></div></li><li><span>4</span><div><strong>Review the clues</strong><p>Use the reveal page for a short family conversation. Focus on what to check next time.</p></div></li></ol>
-  <h2>Non-negotiable boundary</h2><p>Mail authentication and delivery belong to the Family Drill app. Do not paste ESP credentials into bot instructions, actions, chat, or a template.</p>
+  <h2>Authentication</h2><p>Set <code>FAMILY_DRILL_BOT_TOKEN</code> in the app environment. Send <code>Authorization: Bearer &lt;token&gt;</code> on every request. Missing or incorrect tokens receive <code>401</code>.</p>
+  <h2>Endpoints</h2>
+  <div className="card-grid">{endpoints.map(([method, path, description]) => <article className="card" key={path}><strong><code>{method} {path}</code></strong><p>{description}</p></article>)}</div>
+  <h2>Schedule request</h2><p>Send JSON such as <code>{'{"memberId":"maya","scenarioId":"surprise","quietHours":{"start":"21:00","end":"08:00","timezone":"America/New_York"}}'}</code>. The app rejects scheduling unless the household agreement is active. Quiet hours contain <code>start</code>, <code>end</code>, and an IANA <code>timezone</code>.</p>
+  <h2>Hard nos</h2><ul><li>Use fictional organizations only—never spoof a real brand or From identity.</li><li>Never create credential forms or ask for passwords, financial details, or secrets.</li><li>Never put ESP keys in bot instructions, actions, chat, or templates. Delivery stays in the app.</li></ul>
+  <p>No bot template or public install link has been published.</p>
   </>; }

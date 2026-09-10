@@ -10,3 +10,11 @@ export type Member = { id: string; name: string; email: string; householdId: str
 export type Attempt = { id: string; memberId: string; scenarioId: string; drillToken: string; createdAt: string };
 export type DrillEvent = { id: string; attemptId: string; type: "lure_opened"; occurredAt: string };
 export type Scenario = { id: string; fromName: string; subject: string; preview: string; lesson: [string, string, string] };
+export type QuietHours = { start: string; end: string; timezone: string };
+export type BotScheduleIntent = {
+  id: string;
+  memberId: string;
+  scenarioId: string | "surprise";
+  quietHours?: QuietHours;
+  createdAt: string;
+};
