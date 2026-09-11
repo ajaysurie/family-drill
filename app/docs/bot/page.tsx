@@ -1,11 +1,12 @@
+import { BOT_INSTALL_URL } from "../../../lib/bot-install";
+
 export default function BotDocsPage() {
   return <>
     <span className="eyebrow">Install the bot</span>
     <h1>Run Family Drill from one conversation.</h1>
     <p className="lede">Install the bot, verify as the family organizer, and add your family. The bot sends surprise practice drills and shows you what landed. Your family members do not need to set anything up.</p>
 
-    <div className="status-pill">Template not published</div>
-    <p>There is no public bot-template or install link yet. We will add one here when the template is ready.</p>
+    <p><a className="button" href={BOT_INSTALL_URL}>Install the Family Drill bot →</a></p>
 
     <h2>How it works</h2>
     <ol className="numbered">
@@ -16,7 +17,7 @@ export default function BotDocsPage() {
     </ol>
 
     <h2>Hosted or self-hosted</h2>
-    <p><strong>Hosted:</strong> use Family Drill on familydrill.com. The hosted bot experience will be available when the template is published.</p>
+    <p><strong>Hosted:</strong> install the Family Drill bot and use the service on familydrill.com. No app deployment or email-provider setup is required.</p>
     <p><strong>Self-hosted:</strong> clone the repository, run the app on your own domain, and connect your own email service when you are ready to move beyond the included console-only mail adapter.</p>
 
     <h2>Practice, not phishing</h2>

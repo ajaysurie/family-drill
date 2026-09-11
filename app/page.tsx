@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BOT_INSTALL_URL } from "../lib/bot-install";
 import scenarios from "../lib/scenarios.json";
 
 const drillSteps = [
@@ -17,7 +18,7 @@ export default function Home() {
         <h1>Send your family safe, surprise scam drills.</h1>
         <p>Install the bot, add your family&apos;s emails, and see which practice messages they spot. Every click opens a lesson. It never opens a form asking for private information.</p>
         <div className="actions">
-          <Link className="button" href="/docs/bot">Install the Family Drill bot <span aria-hidden>→</span></Link>
+          <a className="button" href={BOT_INSTALL_URL}>Install the Family Drill bot <span aria-hidden>→</span></a>
           <Link className="button secondary" href="/d/drill-leo">Try a demo reveal</Link>
         </div>
         <p className="organizer-note"><strong>Only the organizer sets it up.</strong> Family members just receive occasional practice emails.</p>
@@ -48,6 +49,6 @@ export default function Home() {
     </section>
 
     <section className="safety-strip"><div><span className="eyebrow">The safe part</span><h2>Every click opens coaching.</h2></div><p>The reveal explains the clues immediately. The bot reports sends and clicks so the organizer knows what to practice next. No real brand impersonation, forged senders, downloads, or credential collection. <Link href="/docs/safety">Read the safety rules →</Link></p></section>
-    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>The bot template is not public yet. Read how setup will work. There is no install link until the template is published.</p></div><Link className="button secondary" href="/docs/bot">Install the Family Drill bot →</Link></section>
+    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>Install the published Family Drill bot, then verify as the organizer and add your family.</p></div><a className="button secondary" href={BOT_INSTALL_URL}>Install the Family Drill bot →</a></section>
   </>;
 }
