@@ -21,7 +21,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     authorized({ auth: session, request }) {
-      const gated = request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/household");
+      const gated = request.nextUrl.pathname.startsWith("/admin") || request.nextUrl.pathname.startsWith("/household") || request.nextUrl.pathname.startsWith("/install");
       return !gated || Boolean(session?.user);
     },
   },

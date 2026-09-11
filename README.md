@@ -28,7 +28,7 @@ npm test
 npm run dev
 ```
 
-Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. Sign in at `/login` with an organizer email. Copy the `[auth:magic-link]` URL from the server console. Organizer login mail is intentionally console-stubbed until an ESP is selected; do not configure real delivery credentials.
+Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. The hosted values are `https://app.familydrill.com`; replace both with your own origin when self-hosting. Sign in at `/login` with an organizer email. Copy the `[auth:magic-link]` URL from the server console. Organizer login mail is intentionally console-stubbed until an email service is selected; do not configure real delivery credentials.
 
 Open [http://localhost:3000](http://localhost:3000), then try:
 

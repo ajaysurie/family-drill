@@ -32,7 +32,9 @@ test("public bot docs stay organizer-facing and point builders to the repo contr
     read("../docs/bot-api.md"),
   ]);
 
-  assert.match(page, /Template not published/);
+  assert.match(page, /BOT_TEMPLATE_URL/);
+  assert.match(page, /Paste your install code/);
+  assert.doesNotMatch(page, /Template not published/);
   assert.match(page, /github\.com\/ajaysurie\/family-drill\/blob\/main\/docs\/bot-api\.md/);
   assert.doesNotMatch(page, /\/api\/bot\//);
   assert.doesNotMatch(page, /Authorization:/);

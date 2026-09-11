@@ -10,6 +10,7 @@ footer{display:grid;grid-template-columns:1fr auto;gap:8px 30px;align-items:cent
 @media(max-width:560px){.legacy-notice{align-items:flex-start;flex-direction:column}.legacy-notice .button{width:100%}header,main,footer{width:min(100% - 28px,1160px)}header nav a:nth-child(2){display:none}main>section{padding:70px 0}.hero{gap:45px;min-height:0}.hero h1{font-size:3.35rem}.trust-line{align-items:flex-start;flex-wrap:wrap}.run-grid,.checks{grid-template-columns:1fr}.bot-card{margin-left:0!important;margin-right:0!important;padding:30px!important}.policy-list li{grid-template-columns:1fr}.policy-list li strong{margin-bottom:5px}footer{grid-template-columns:1fr}footer nav{grid-column:1;grid-row:auto;flex-wrap:wrap}.add-member{align-items:stretch;flex-direction:column}}
 
 .hero-art{position:relative}.hero-art:before{content:"";position:absolute;inset:8% -2% -2% 8%;border-radius:48% 52% 44% 56%;background:var(--mint);transform:rotate(-3deg);z-index:-1}.hero-art img{display:block;width:100%;height:auto;filter:drop-shadow(0 18px 24px rgba(23,49,43,.08))}
+.install{margin-top:100px!important}.install-code{display:flex;align-items:center;gap:12px;margin:24px 0}.install-code code{min-width:0;overflow-wrap:anywhere;padding:14px 16px;font-size:1rem}.install>.button{margin-top:18px}
 
 /* Bot-first marketing */
 .nav-cta{padding:8px 14px;border-radius:999px;background:var(--green);color:white!important}
