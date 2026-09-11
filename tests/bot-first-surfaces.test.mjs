@@ -25,14 +25,21 @@ test("documentation navigation leads with bot installation", async () => {
   assert.doesNotMatch(layout, /Family Drill docs/);
 });
 
-test("public bot docs stay organizer-facing and point builders to the repo contract", async () => {
-  const [page, readme, contract] = await Promise.all([
+test("published bot install is available across organizer-facing pages", async () => {
+  const [page, home, start, installConfig, readme, contract] = await Promise.all([
     read("../app/docs/bot/page.tsx"),
+    read("../app/page.tsx"),
+    read("../app/docs/start/page.tsx"),
+    read("../lib/bot-install.ts"),
     read("../README.md"),
     read("../docs/bot-api.md"),
   ]);
 
-  assert.match(page, /Template not published/);
+  assert.match(installConfig, /https:\/\/x\.ai\/bot\/GYM2zP9NA3J4_g9tTX0qS/);
+  for (const organizerPage of [page, home, start]) {
+    assert.match(organizerPage, /BOT_INSTALL_URL/);
+    assert.doesNotMatch(organizerPage, /Template not published|not public yet|not published yet/i);
+  }
   assert.match(page, /github\.com\/ajaysurie\/family-drill\/blob\/main\/docs\/bot-api\.md/);
   assert.doesNotMatch(page, /\/api\/bot\//);
   assert.doesNotMatch(page, /Authorization:/);
