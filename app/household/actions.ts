@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { activateHousehold, addMember } from "../../lib/store";
+import { activateHousehold, addMember, allCategories, setDrillPreferences } from "../../lib/store";
 import { auth } from "../../auth";
 
 export async function activateAgreement() {
@@ -15,4 +15,10 @@ export async function createMember(formData: FormData) {
   await addMember(session.user.id, String(formData.get("name") ?? ""), String(formData.get("email") ?? ""));
   revalidatePath("/household");
   revalidatePath("/admin");
+}
+
+export async function savePreferences(formData: FormData) {
+  const session = await auth(); if (!session?.user?.id) throw new Error("Organizer session required");
+  await setDrillPreferences(session.user.id, allCategories.filter((category) => formData.getAll("category").includes(category)), formData.get("smsPreview") === "on");
+  revalidatePath("/household");
 }

@@ -58,3 +58,9 @@ The scenario tests reject credential-like prompts, forms, attachments, and downl
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Lure variety and safety
+
+The scenario pack covers six organizer-selectable categories: package and delivery, bank and payment alerts, subscriptions and streaming, tech support and virus notices, school and kids accounts, and account lockouts. Organizers can disable any category on the household page; bot surprise selection uses only enabled categories. An optional SMS bubble is a preview only and does not send texts.
+
+All lure identities are fictional: SwiftBox, Riverline Bank, Streamly, SoftShield, Maple District Portal, and PayNest. Their colors and geometric marks were created for this project. Do not replace them with real trademarks, lookalike domains, or trade dress. Portal forms discard field values and store only engagement/submit scoring events.

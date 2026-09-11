@@ -9,18 +9,19 @@ const tempDirectory = await mkdtemp(path.join(process.cwd(), ".mail-test-"));
 const compile = async (name) => {
   const source = await readFile(new URL(`../lib/${name}.ts`, import.meta.url), "utf8");
   const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-    .replace('"./render-drill-email"', '"./render-drill-email.js"');
+    .replace('"./render-drill-email"', '"./render-drill-email.js"').replace('"./brands"', '"./brands.js"');
   await writeFile(path.join(tempDirectory, `${name}.js`), output);
 };
 
 await writeFile(path.join(tempDirectory, "package.json"), '{"type":"module"}');
+await compile("brands");
 await compile("render-drill-email");
 await compile("mail");
 const { consoleMailAdapter, createResendMailAdapter, getMailAdapter } = await import(pathToFileURL(path.join(tempDirectory, "mail.js")));
 
 const drill = {
   member: { id: "member-1", name: "Maya", email: "maya@example.test", householdId: "home-1" },
-  scenario: { fromName: "Parcel Notice", fromLocalPart: "updates", fromDomain: "parcel-notice.test", subject: "Delivery update", preview: "An update", bodyParagraphs: ["Please review."], footerLines: ["Parcel Notice"] },
+  scenario: { category: "delivery", layoutId: "cta-hero", brandId: "swiftbox", fromName: "Parcel Notice", fromLocalPart: "updates", fromDomain: "parcel-notice.test", subject: "Delivery update", preview: "An update", bodyParagraphs: ["Please review."], footerLines: ["Parcel Notice"] },
   attempt: { drillToken: "token-1" },
 };
 
