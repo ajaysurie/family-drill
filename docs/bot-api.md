@@ -110,9 +110,13 @@ Pausing blocks roster writes and new drills. Read-only install, health, member, 
 ## Safety boundaries
 
 - Use only fictional organizations. Never imitate a real brand, relative, bank, government agency, or sender identity.
-- A lure may teach recognition of a request for personal information, but every lure link must open the immediate reveal—not a collection form or external drill page.
-- Never collect passwords, Social Security numbers, payment details, form answers, or other secrets.
+- A lure link must stay within Family Drill: it opens either the immediate reveal or an approved fictional portal that posts no field values and then reveals the lesson.
+- Never receive or store passwords, Social Security numbers, payment details, form answers, or other secrets.
 - Do not use tracking pixels, attachments, or downloads. A GET, email open, preview, or scanner prefetch must not count as engagement.
-- Record engagement only after the member deliberately presses the reveal-page button.
+- Record engagement only after a deliberate reveal confirmation or fictional-portal submit; never score a GET, preview, or field value.
 - Keep email-provider credentials inside the app's server-side delivery integration. They do not belong in bot actions, instructions, templates, or conversations.
 - Operate only under an active household agreement. Any member can ask the organizer to pause the household.
+
+### Drill preferences
+
+`GET /api/bot/preferences` returns `enabledCategories` and `smsPreview`. `PATCH /api/bot/preferences` accepts both fields; category values are `delivery`, `bank-payment`, `subscriptions`, `tech-support`, `school-kids`, and `account-lockout`. The bot should read these preferences when describing choices. The server always enforces them when selecting a surprise scenario (and rejects an explicitly disabled scenario), so a bot cannot accidentally bypass the household setting. SMS remains preview-only.

@@ -11,7 +11,7 @@ export function createResendMailAdapter(client: ResendClient, from: string): Mai
   return {
     async sendDrill({ member, scenario, attempt }) {
       const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
-      const message = renderDrillEmail(scenario, member, `${baseUrl}/d/${attempt.drillToken}`);
+      const message = renderDrillEmail(scenario, member, `${baseUrl}/${scenario.portalStage ? "p" : "d"}/${attempt.drillToken}`);
       const { error } = await client.emails.send({
         from,
         to: message.to,
@@ -28,7 +28,7 @@ export function createResendMailAdapter(client: ResendClient, from: string): Mai
 export const consoleMailAdapter: MailAdapter = {
   async sendDrill({ member, scenario, attempt }) {
     const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
-    const message = renderDrillEmail(scenario, member, `${baseUrl}/d/${attempt.drillToken}`);
+    const message = renderDrillEmail(scenario, member, `${baseUrl}/${scenario.portalStage ? "p" : "d"}/${attempt.drillToken}`);
     console.log(`[mail:stub]\nFrom: ${message.from}\nTo: ${message.to}\nSubject: ${message.subject}\n\n${message.text}\n\n[HTML: ${Buffer.byteLength(message.html)} bytes]`);
   }
 };

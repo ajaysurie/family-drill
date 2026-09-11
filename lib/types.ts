@@ -11,12 +11,15 @@ export type Attempt = { id: string; memberId: string; scenarioId: string; drillT
 export type DrillEvent = {
   id: string;
   attemptId: string;
-  type: "drill.sent" | "drill.revealed" | "lure.engaged" | "drill.failed";
+  type: "drill.sent" | "drill.revealed" | "lure.engaged" | "credentials.submitted" | "drill.failed";
   occurredAt: string;
   summary: string;
 };
 export type Scenario = {
   id: string;
+  category: ScenarioCategory;
+  layoutId: "cta-hero" | "security-banner" | "receipt-table" | "tracking-card";
+  brandId: BrandId;
   fromName: string;
   subject: string;
   preview: string;
@@ -28,7 +31,12 @@ export type Scenario = {
   bodyHtml?: string;
   ctaLabel?: string;
   footerLines?: string[];
+  portalStage?: boolean;
+  smsBody?: string;
+  lineItems?: { label: string; amount: string }[];
 };
+export type ScenarioCategory = "delivery" | "bank-payment" | "subscriptions" | "tech-support" | "school-kids" | "account-lockout";
+export type BrandId = "swiftbox" | "riverline" | "streamly" | "softshield" | "maple-district" | "paynest";
 export type BotInstall = {
   active: boolean;
   organizerEmail: string | null;
