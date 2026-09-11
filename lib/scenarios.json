@@ -3,70 +3,230 @@
     "id": "parcel-redelivery",
     "fromName": "Puddlejump Parcel Co.",
     "subject": "We could not leave your family parcel",
-    "preview": "Choose a new delivery time today using the practice link.",
-    "lesson": ["Unexpected delivery urgency is a reason to pause.", "Check purchases in the shop or carrier site you normally use.", "Do not pay a surprise redelivery fee from a message link."]
+    "preview": "Choose a new delivery time today before your parcel is returned.",
+    "lesson": [
+      "Unexpected delivery urgency is a reason to pause.",
+      "Check purchases in the shop or carrier site you normally use.",
+      "Do not pay a surprise redelivery fee from a message link."
+    ],
+    "fromLocalPart": "shipping",
+    "fromDomain": "puddlejump-parcel.test",
+    "preheader": "Your parcel is being held after an unsuccessful delivery attempt.",
+    "bodyParagraphs": [
+      "Our driver was unable to complete delivery at your address. Your parcel will be held until the end of today.",
+      "Choose another delivery window to avoid having the parcel returned to the sender."
+    ],
+    "ctaLabel": "Choose delivery time",
+    "footerLines": [
+      "Need help? Contact Puddlejump Parcel Support.",
+      "48 Harbor Way, Brookfield"
+    ]
   },
   {
     "id": "payment-failed",
     "fromName": "Copper Kite Family Bank",
     "subject": "A household payment did not go through",
-    "preview": "Review the fictional payment before evening to prevent a hold.",
-    "lesson": ["A failed-payment warning can create false urgency.", "Check activity through the known app or number on your statement.", "Never share financial details after following an unexpected link."]
+    "preview": "Review the payment before evening to prevent a hold.",
+    "lesson": [
+      "A failed-payment warning can create false urgency.",
+      "Check activity through the known app or number on your statement.",
+      "Never share financial details after following an unexpected link."
+    ],
+    "fromLocalPart": "alerts",
+    "fromDomain": "copper-kite-bank.test",
+    "preheader": "Action is needed to prevent an interruption to your scheduled payment.",
+    "bodyParagraphs": [
+      "We could not process your latest household payment. No further attempts will be made automatically.",
+      "Review the payment before 6:00 PM to prevent a temporary hold on outgoing payments."
+    ],
+    "ctaLabel": "Review payment",
+    "footerLines": [
+      "Copper Kite Account Support",
+      "14 Market Square, Fairview"
+    ]
   },
   {
     "id": "benefits-update",
     "fromName": "Northstar Benefits Cooperative",
     "subject": "Your family benefits need an update",
-    "preview": "Confirm the fictional household update by Friday to avoid a delay.",
-    "lesson": ["A deadline about important benefits is designed to feel pressing.", "Contact the program through paperwork or a number you already trust.", "Do not provide private family information through a surprise message."]
+    "preview": "Confirm the household update by Friday to avoid a delay.",
+    "lesson": [
+      "A deadline about important benefits is designed to feel pressing.",
+      "Contact the program through paperwork or a number you already trust.",
+      "Do not provide private family information through a surprise message."
+    ],
+    "fromLocalPart": "noreply",
+    "fromDomain": "northstar-benefits.test",
+    "preheader": "Your response is needed by Friday to keep this update on schedule.",
+    "bodyParagraphs": [
+      "We are missing a required household update for your benefits record.",
+      "Confirm the update by Friday so your next benefit period is not delayed."
+    ],
+    "ctaLabel": "Review required update",
+    "footerLines": [
+      "Northstar Member Services",
+      "220 Cedar Lane, Glen Park"
+    ]
   },
   {
     "id": "refund-bait",
     "fromName": "Civic Lantern Tax Help",
     "subject": "A larger refund may be waiting for your household",
-    "preview": "Check the fictional refund notice before the review window closes.",
-    "lesson": ["Unexpected money and a short deadline are both warning signs.", "Use a known tax professional or official site to verify a notice.", "Do not provide tax or identity information from an email link."]
+    "preview": "Check the refund notice before the review window closes.",
+    "lesson": [
+      "Unexpected money and a short deadline are both warning signs.",
+      "Use a known tax professional or official site to verify a notice.",
+      "Do not provide tax or identity information from an email link."
+    ],
+    "fromLocalPart": "refunds",
+    "fromDomain": "civic-lantern.test",
+    "preheader": "Your refund review window closes soon.",
+    "bodyParagraphs": [
+      "A recent review indicates that your household may qualify for a larger refund.",
+      "Check the notice before the review window closes. Unclaimed amounts may be returned for processing."
+    ],
+    "ctaLabel": "Check refund status",
+    "footerLines": [
+      "Civic Lantern Client Support",
+      "9 Lantern Plaza, Westhaven"
+    ]
   },
   {
     "id": "account-security",
     "fromName": "Bright Badger Tech Support",
     "subject": "New activity detected on your family account",
-    "preview": "Review the fictional device now before access is restricted.",
-    "lesson": ["Security alerts can use fear to rush a decision.", "Open the service yourself and review its security page.", "Never give a caller remote access or share a security code."]
+    "preview": "Review the new device now before access is restricted.",
+    "lesson": [
+      "Security alerts can use fear to rush a decision.",
+      "Open the service yourself and review its security page.",
+      "Never give a caller remote access or share a security code."
+    ],
+    "fromLocalPart": "security",
+    "fromDomain": "bright-badger-tech.test",
+    "preheader": "New device activity requires your attention.",
+    "bodyParagraphs": [
+      "We detected access to your family account from a device we do not recognize.",
+      "Review the activity now. Access may be limited if we cannot confirm it was expected."
+    ],
+    "ctaLabel": "Review activity",
+    "footerLines": [
+      "Bright Badger Security Desk",
+      "77 Circuit Road, Lakewood"
+    ]
   },
   {
     "id": "missed-voicemail",
     "fromName": "Chirrup Family Voicemail",
     "subject": "You missed a message about your child",
-    "preview": "Play the fictional urgent voicemail using the practice link.",
-    "lesson": ["A vague message about family can provoke a quick reaction.", "Call the known person or organization directly to check.", "Avoid unfamiliar links claiming to play a voicemail."]
+    "preview": "An urgent voicemail about your child is waiting.",
+    "lesson": [
+      "A vague message about family can provoke a quick reaction.",
+      "Call the known person or organization directly to check.",
+      "Avoid unfamiliar links claiming to play a voicemail."
+    ],
+    "fromLocalPart": "voicemail",
+    "fromDomain": "chirrup-messages.test",
+    "preheader": "A new urgent message about your child is waiting.",
+    "bodyParagraphs": [
+      "You have one unheard voicemail marked urgent. The caller said it concerns your child.",
+      "The message will remain available until 8:00 PM today."
+    ],
+    "ctaLabel": "Play voicemail",
+    "footerLines": [
+      "Chirrup Subscriber Support",
+      "31 Bell Street, Oak Crossing"
+    ]
   },
   {
     "id": "pharmacy-pickup",
     "fromName": "Juniper Jar Pharmacy",
     "subject": "A family prescription is waiting for pickup",
-    "preview": "Confirm the fictional pickup today before it is returned.",
-    "lesson": ["Health-related deadlines deserve a calm, careful check.", "Call the pharmacy using a number you already have.", "Do not disclose health or payment information through a message link."]
+    "preview": "Confirm pickup today before the prescription is returned.",
+    "lesson": [
+      "Health-related deadlines deserve a calm, careful check.",
+      "Call the pharmacy using a number you already have.",
+      "Do not disclose health or payment information through a message link."
+    ],
+    "fromLocalPart": "pickup",
+    "fromDomain": "juniper-jar.test",
+    "preheader": "Your prescription will be returned if pickup is not confirmed today.",
+    "bodyParagraphs": [
+      "A family prescription is ready, but the pickup window ends today.",
+      "Confirm that you still plan to collect it before the order is returned to stock."
+    ],
+    "ctaLabel": "Confirm pickup",
+    "footerLines": [
+      "Juniper Jar Customer Care",
+      "6 Juniper Avenue, Mill Creek"
+    ]
   },
   {
     "id": "utility-past-due",
     "fromName": "Sunbeam Home Utilities",
     "subject": "Past-due notice for your household service",
-    "preview": "Review the fictional balance now to prevent an evening shutoff.",
-    "lesson": ["A shutoff threat uses fear and urgency to demand action.", "Check your paper bill or the utility site you normally use.", "Do not send money through a payment method named in a surprise message."]
+    "preview": "Review the balance now to prevent an evening shutoff.",
+    "lesson": [
+      "A shutoff threat uses fear and urgency to demand action.",
+      "Check your paper bill or the utility site you normally use.",
+      "Do not send money through a payment method named in a surprise message."
+    ],
+    "fromLocalPart": "billing",
+    "fromDomain": "sunbeam-utilities.test",
+    "preheader": "Payment is required today to prevent an interruption.",
+    "bodyParagraphs": [
+      "Our records show an overdue balance on your household service.",
+      "Service is scheduled for interruption this evening unless the balance is reviewed today."
+    ],
+    "ctaLabel": "Review balance",
+    "footerLines": [
+      "Sunbeam Billing Support",
+      "180 Powerhouse Drive, Rose Hill"
+    ]
   },
   {
     "id": "garden-club",
     "fromName": "Pinecone Garden Circle",
     "subject": "The family garden meetup moved this afternoon",
-    "preview": "See the fictional new location before your family leaves home.",
-    "lesson": ["A last-minute plan change is a reason to pause.", "Confirm the location with an organizer you know.", "Do not share family plans after following an unexpected link."]
+    "preview": "See the new location before your family leaves home.",
+    "lesson": [
+      "A last-minute plan change is a reason to pause.",
+      "Confirm the location with an organizer you know.",
+      "Do not share family plans after following an unexpected link."
+    ],
+    "fromLocalPart": "updates",
+    "fromDomain": "pinecone-garden.test",
+    "preheader": "Today’s meetup location has changed.",
+    "bodyParagraphs": [
+      "Due to a last-minute site issue, this afternoon’s family garden meetup has moved.",
+      "Check the updated location before leaving home. The start time has not changed."
+    ],
+    "ctaLabel": "See new location",
+    "footerLines": [
+      "Pinecone Garden Circle",
+      "Community Office, 12 Spruce Walk"
+    ]
   },
   {
     "id": "book-cart",
     "fromName": "Moonbeam Book Cart",
     "subject": "Your child's reserved story expires today",
-    "preview": "Keep the fictional reservation by following the practice link.",
-    "lesson": ["A small deadline can still be used to rush you.", "Check reservations through the library or shop you normally use.", "Ask whether you expected the message before opening its link."]
+    "preview": "Keep the reservation before it is released tonight.",
+    "lesson": [
+      "A small deadline can still be used to rush you.",
+      "Check reservations through the library or shop you normally use.",
+      "Ask whether you expected the message before opening its link."
+    ],
+    "fromLocalPart": "reservations",
+    "fromDomain": "moonbeam-books.test",
+    "preheader": "Your child’s reserved story will be released tonight.",
+    "bodyParagraphs": [
+      "The story reserved for your child has reached the end of its hold period.",
+      "Keep the reservation before it is released to the next reader tonight."
+    ],
+    "ctaLabel": "Keep reservation",
+    "footerLines": [
+      "Moonbeam Reservation Desk",
+      "25 Paper Street, Starling"
+    ]
   }
 ]
