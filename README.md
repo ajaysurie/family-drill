@@ -30,6 +30,8 @@ npm run dev
 
 Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. Sign in at `/login` with an organizer email. Copy the `[auth:magic-link]` URL from the server console. Organizer login mail is intentionally console-stubbed until an ESP is selected; do not configure real delivery credentials.
 
+For production metrics, enable Web Analytics and Speed Insights in the Vercel project if they are not already enabled. Their packages send no data during local development.
+
 Open [http://localhost:3000](http://localhost:3000), then try:
 
 - `/household`: organizer-only agreement status, plain-language terms, member list, and add-member form
