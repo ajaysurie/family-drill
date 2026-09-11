@@ -1,4 +1,5 @@
 import { BOT_INSTALL_URL } from "../../../lib/bot-install";
+import { HOSTED_APP_URL } from "../../../lib/constants";
 
 export default function BotDocsPage() {
   return <>
@@ -10,14 +11,14 @@ export default function BotDocsPage() {
 
     <h2>How it works</h2>
     <ol className="numbered">
-      <li><span>1</span><div><strong>Install and verify</strong><p>The organizer installs the bot and verifies their email once.</p></div></li>
-      <li><span>2</span><div><strong>Add your family</strong><p>Tell the bot who should receive the household&apos;s agreed practice drills.</p></div></li>
-      <li><span>3</span><div><strong>Send surprise practice</strong><p>The bot queues fictional scam scenarios at unexpected times.</p></div></li>
-      <li><span>4</span><div><strong>See what landed</strong><p>Ask the bot which drills were sent, revealed, or deliberately opened, then review the coaching together.</p></div></li>
+      <li><span>1</span><div><strong>Install the bot</strong><p>Open the Family Drill bot and add it to your chats.</p></div></li>
+      <li><span>2</span><div><strong>Verify on the site</strong><p>Sign in at {HOSTED_APP_URL} with your organizer email.</p></div></li>
+      <li><span>3</span><div><strong>Paste your install code</strong><p>Copy the install code shown after verification and paste it into your Family Drill bot chat.</p></div></li>
+      <li><span>4</span><div><strong>Add your family</strong><p>Tell the bot who should receive the household&apos;s agreed practice drills, then start sending surprise practice.</p></div></li>
     </ol>
 
     <h2>Hosted or self-hosted</h2>
-    <p><strong>Hosted:</strong> install the Family Drill bot and use the service on familydrill.com. No app deployment or email-provider setup is required.</p>
+    <p><strong>Hosted:</strong> use Family Drill at {HOSTED_APP_URL}. This is the default, so no app deployment or email-provider setup is required.</p>
     <p><strong>Self-hosted:</strong> clone the repository, run the app on your own domain, and connect your own email service when you are ready to move beyond the included console-only mail adapter.</p>
 
     <h2>Practice, not phishing</h2>

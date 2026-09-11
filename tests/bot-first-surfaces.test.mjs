@@ -40,6 +40,7 @@ test("published bot install is available across organizer-facing pages", async (
     assert.match(organizerPage, /BOT_INSTALL_URL/);
     assert.doesNotMatch(organizerPage, /Template not published|not public yet|not published yet/i);
   }
+  assert.match(page, /Paste your install code/);
   assert.match(page, /github\.com\/ajaysurie\/family-drill\/blob\/main\/docs\/bot-api\.md/);
   assert.doesNotMatch(page, /\/api\/bot\//);
   assert.doesNotMatch(page, /Authorization:/);
