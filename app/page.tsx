@@ -43,12 +43,12 @@ export default function Home() {
     <section>
       <span className="eyebrow">Choose where it runs</span><h2>Hosted, or yours to run.</h2>
       <div className="run-grid">
-        <article className="run-card featured"><span className="tag">Simplest</span><h3>Hosted on familydrill.com</h3><p>Install the bot and use the Family Drill service. No app deployment or email-provider setup.</p><Link href="/docs/bot">Get bot install instructions <span aria-hidden>→</span></Link></article>
+        <article className="run-card featured"><span className="tag">Simplest</span><h3>Hosted on app.familydrill.com</h3><p>Install the bot and use the Family Drill service. No app deployment or email-provider setup.</p><Link href="/docs/bot">Get bot install instructions <span aria-hidden>→</span></Link></article>
         <article className="run-card"><span className="tag">MIT licensed</span><h3>Clone and self-host</h3><p>Run the app on your own domain and connect your own email service provider.</p><a href="https://github.com/ajaysurie/family-drill">Clone on GitHub <span aria-hidden>↗</span></a></article>
       </div>
     </section>
 
     <section className="safety-strip"><div><span className="eyebrow">The safe part</span><h2>Every click opens coaching.</h2></div><p>The reveal explains the clues immediately. The bot reports sends and clicks so the organizer knows what to practice next. No real brand impersonation, forged senders, downloads, or credential collection. <Link href="/docs/safety">Read the safety rules →</Link></p></section>
-    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>Install the published Family Drill bot, then verify as the organizer and add your family.</p></div><a className="button secondary" href={BOT_INSTALL_URL}>Install the Family Drill bot →</a></section>
+    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>Install the bot, verify your organizer email, and paste your install code into the bot chat.</p></div><a className="button secondary" href={BOT_INSTALL_URL}>Install the Family Drill bot →</a></section>
   </>;
 }
