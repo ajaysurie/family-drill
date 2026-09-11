@@ -21,9 +21,11 @@ test("bot installation requires the authenticated organizer instead of trusting 
   assert.doesNotMatch(route, /request\.json|body\.email/);
 });
 
-test("magic-link and drill delivery remain console stubs", async () => {
-  const [auth, env] = await Promise.all([read("../auth.ts"), read("../.env.example")]);
+test("magic links remain console-only while drill delivery can use Resend", async () => {
+  const [auth, env, mail, store] = await Promise.all([read("../auth.ts"), read("../.env.example"), read("../lib/mail.ts"), read("../lib/store.ts")]);
   assert.match(auth, /\[auth:magic-link\]/);
   assert.doesNotMatch(auth, /sendMail|createTransport/);
-  assert.match(env, /No Resend or SMTP key/);
+  assert.match(env, /RESEND_API_KEY=/);
+  assert.match(mail, /process\.env\.MAIL_ADAPTER !== "resend"/);
+  assert.match(store, /getMailAdapter\(\)\.sendDrill/);
 });
