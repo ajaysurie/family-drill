@@ -24,3 +24,22 @@ test("documentation navigation leads with bot installation", async () => {
   assert.ok(layout.indexOf('href="/docs/bot"') < layout.indexOf('href="/docs/start"'));
   assert.doesNotMatch(layout, /Family Drill docs/);
 });
+
+test("public bot docs stay organizer-facing and point builders to the repo contract", async () => {
+  const [page, readme, contract] = await Promise.all([
+    read("../app/docs/bot/page.tsx"),
+    read("../README.md"),
+    read("../docs/bot-api.md"),
+  ]);
+
+  assert.match(page, /Template not published/);
+  assert.match(page, /github\.com\/ajaysurie\/family-drill\/blob\/main\/docs\/bot-api\.md/);
+  assert.doesNotMatch(page, /\/api\/bot\//);
+  assert.doesNotMatch(page, /Authorization:/);
+  assert.doesNotMatch(page, /JSON|\.map\(/);
+  assert.match(readme, /\[eggbot API contract\]\(docs\/bot-api\.md\)/);
+  assert.match(contract, /POST \/api\/bot\/drills/);
+  assert.match(contract, /Authorization: Bearer/);
+  assert.match(contract, /drill\.revealed/);
+  assert.match(contract, /POST \/api\/bot\/pause/);
+});
