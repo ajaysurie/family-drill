@@ -38,7 +38,7 @@ Open [http://localhost:3000](http://localhost:3000), then try:
 
 The home page, `/docs/*`, and `/d/[token]` are public. Auth.js gates `/household` and `/admin`; their server actions also require the organizer session, and database queries scope records to that organizer.
 
-`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console drill `MailAdapter`. Organizer magic links and drills are both console-only stubs until an ESP is selected.
+`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console by default. For production drill delivery, set `MAIL_ADAPTER=resend`, `RESEND_API_KEY` to a Resend API key, and `EMAIL_FROM` to a sender on a verified domain. Resend uses that verified sender as the envelope From while retaining the fictional scenario identity only inside the rendered drill. Organizer magic links remain console-only.
 
 Bot builders can use the repository's [eggbot API contract](docs/bot-api.md) for authentication, endpoint, drill queue, event, pause/resume, and safety details. The public bot page stays focused on organizer setup.
 
