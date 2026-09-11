@@ -2,13 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BOT_INSTALL_URL } from "../lib/bot-install";
 import scenarios from "../lib/scenarios.json";
-
-const drillSteps = [
-  ["1", "Install the bot", "The family organizer verifies their email once."],
-  ["2", "Add your family", "Tell the bot which relatives should get practice emails."],
-  ["3", "Let drills arrive", "The bot sends surprise emails from fictional organizations."],
-  ["4", "See what landed", "A click reveals the drill, gives coaching, and appears in the bot report."],
-];
+import { OnboardingSteps } from "./onboarding-steps";
 
 export default function Home() {
   return <>
@@ -16,7 +10,7 @@ export default function Home() {
       <div className="hero-copy">
         <span className="eyebrow">Scam practice for families</span>
         <h1>Send your family safe, surprise scam drills.</h1>
-        <p>Install the bot, add your family&apos;s emails, and see which practice messages they spot. Every click opens a lesson. It never opens a form asking for private information.</p>
+        <p>Install the bot, then add relatives by telling the bot their names and email addresses in the bot chat. There is no hosted website form for adding family members.</p>
         <div className="actions">
           <a className="button" href={BOT_INSTALL_URL}>Install the Family Drill bot <span aria-hidden>→</span></a>
           <Link className="button secondary" href="/d/drill-leo">Try a demo reveal</Link>
@@ -27,8 +21,8 @@ export default function Home() {
     </section>
 
     <section>
-      <span className="eyebrow">How it works</span><h2>Four steps. The bot does the work.</h2>
-      <div className="steps">{drillSteps.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
+      <span className="eyebrow">The easy path</span><h2>Set everything up from the bot chat.</h2>
+      <OnboardingSteps />
     </section>
 
     <section className="examples-section">
@@ -49,6 +43,6 @@ export default function Home() {
     </section>
 
     <section className="safety-strip"><div><span className="eyebrow">The safe part</span><h2>Every click opens coaching.</h2></div><p>The reveal explains the clues immediately. The bot reports sends and clicks so the organizer knows what to practice next. No real brand impersonation, forged senders, downloads, or credential collection. <Link href="/docs/safety">Read the safety rules →</Link></p></section>
-    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>Install the bot, verify your organizer email, and paste your install code into the bot chat.</p></div><a className="button secondary" href={BOT_INSTALL_URL}>Install the Family Drill bot →</a></section>
+    <section className="bot-card"><div><span className="eyebrow">Start with the bot</span><h2>Ready to give your family a practice run?</h2><p>Install the bot, verify your organizer email, paste your install code, then add family names and emails in the bot chat, not on the website.</p></div><a className="button secondary" href={BOT_INSTALL_URL}>Install the Family Drill bot →</a></section>
   </>;
 }

@@ -26,10 +26,11 @@ test("documentation navigation leads with bot installation", async () => {
 });
 
 test("published bot install is available across organizer-facing pages", async () => {
-  const [page, home, start, installConfig, readme, contract] = await Promise.all([
+  const [page, home, start, steps, installConfig, readme, contract] = await Promise.all([
     read("../app/docs/bot/page.tsx"),
     read("../app/page.tsx"),
     read("../app/docs/start/page.tsx"),
+    read("../app/onboarding-steps.tsx"),
     read("../lib/bot-install.ts"),
     read("../README.md"),
     read("../docs/bot-api.md"),
@@ -40,7 +41,7 @@ test("published bot install is available across organizer-facing pages", async (
     assert.match(organizerPage, /BOT_INSTALL_URL/);
     assert.doesNotMatch(organizerPage, /Template not published|not public yet|not published yet/i);
   }
-  assert.match(page, /Paste your install code/);
+  assert.match(steps, /Paste the install code/);
   assert.match(page, /github\.com\/ajaysurie\/family-drill\/blob\/main\/docs\/bot-api\.md/);
   assert.doesNotMatch(page, /\/api\/bot\//);
   assert.doesNotMatch(page, /Authorization:/);
@@ -50,4 +51,25 @@ test("published bot install is available across organizer-facing pages", async (
   assert.match(contract, /Authorization: Bearer/);
   assert.match(contract, /drill\.revealed/);
   assert.match(contract, /POST \/api\/bot\/pause/);
+});
+
+test("organizer pages explain the complete bot-chat onboarding path", async () => {
+  const [home, start, bot, steps, layout] = await Promise.all([
+    read("../app/page.tsx"),
+    read("../app/docs/start/page.tsx"),
+    read("../app/docs/bot/page.tsx"),
+    read("../app/onboarding-steps.tsx"),
+    read("../app/layout.tsx"),
+  ]);
+
+  for (const page of [home, start, bot]) {
+    assert.match(page, /OnboardingSteps/);
+    assert.match(page, /bot (?:their names and email addresses in the bot chat|chat)/);
+    assert.match(page, /no hosted website form/i);
+  }
+  for (const phrase of ["Install the bot", "app.familydrill.com", "Copy the install code", "Paste the install code into the bot chat", "relative's name and email address", "bot sends the drills", "bot chat to review"]) {
+    assert.match(steps, new RegExp(phrase.replaceAll(".", "\\.")));
+  }
+  assert.match(layout, />Developer demo: Household</);
+  assert.match(layout, />Developer demo: Admin</);
 });
