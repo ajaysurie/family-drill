@@ -40,6 +40,8 @@ The home page, `/docs/*`, and `/d/[token]` are public. Auth.js gates `/household
 
 `Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console. The repository implements only a console drill `MailAdapter`. Organizer magic links and drills are both console-only stubs until an ESP is selected.
 
+Bot builders can use the repository's [eggbot API contract](docs/bot-api.md) for authentication, endpoint, drill queue, event, pause/resume, and safety details. The public bot page stays focused on organizer setup.
+
 ## Privacy model
 
 The database stores the organizer email identity, household agreement, relative names and email addresses, attempts, and deliberate engagement events. Auth.js stores expiring verification tokens and organizer sessions. Relative links use random tokens and need no relative account. A GET only reveals the lesson; it never records engagement. Drills collect no credentials, payment details, open pixels, attachments, or form answers.
