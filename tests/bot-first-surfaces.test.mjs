@@ -70,6 +70,21 @@ test("organizer pages explain the complete bot-chat onboarding path", async () =
   for (const phrase of ["Install the bot", "app.familydrill.com", "Copy the install code", "Paste the install code into the bot chat", "relative's name and email address", "bot sends the drills", "bot chat to review"]) {
     assert.match(steps, new RegExp(phrase.replaceAll(".", "\\.")));
   }
-  assert.match(layout, />Developer demo: Household</);
-  assert.match(layout, />Developer demo: Admin</);
+  assert.match(layout, /href="\/login">Organizer sign in</);
+  assert.doesNotMatch(layout, /href="\/(?:household|admin)"/);
+});
+
+test("public chrome keeps organizer access visible and legacy demos private", async () => {
+  const [layout, styles, contact] = await Promise.all([
+    read("../app/layout.tsx"),
+    read("../app/styles.css"),
+    read("../app/docs/contact/page.tsx"),
+  ]);
+
+  assert.match(layout, /href="\/login">Organizer sign in</);
+  assert.doesNotMatch(layout, /href="\/(?:household|admin)"/);
+  assert.match(styles, /header nav\{align-items:center\}/);
+  assert.doesNotMatch(styles, /header nav a:nth-child\(2\)\{display:none\}/);
+  assert.match(contact, /mailto:support@familydrill\.com/);
+  assert.match(contact, />support@familydrill\.com</);
 });

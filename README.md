@@ -32,7 +32,7 @@ Create a Vercel Postgres/Neon database and put its pooled connection string in `
 
 For production metrics, enable Web Analytics and Speed Insights in the Vercel project if they are not already enabled. Their packages send no data during local development.
 
-Open [http://localhost:3000](http://localhost:3000), then try:
+Open [http://localhost:3000](http://localhost:3000), then try these self-hosted development and evaluation routes (they are intentionally not linked from the public site navigation):
 
 - `/household`: organizer-only agreement status, plain-language terms, member list, and add-member form
 - `/admin`: organizer-only surprise-drill controls and sent-versus-deliberate-engagement reports
