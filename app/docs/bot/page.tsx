@@ -1,6 +1,6 @@
 import { BOT_INSTALL_URL } from "../../../lib/bot-install";
 import { OnboardingSteps } from "../../onboarding-steps";
-import { HOSTED_APP_URL } from "../../../lib/constants";
+import { HOSTED_LOGIN_URL } from "../../../lib/constants";
 
 export default function BotDocsPage() {
   return <>
@@ -14,7 +14,7 @@ export default function BotDocsPage() {
     <OnboardingSteps />
 
     <h2>Hosted or self-hosted</h2>
-    <p><strong>Hosted:</strong> use Family Drill at {HOSTED_APP_URL}. This is the default, so no app deployment or email-provider setup is required.</p>
+    <p><strong>Hosted:</strong> sign in at <a href={HOSTED_LOGIN_URL}>{HOSTED_LOGIN_URL}</a>. After you verify your email, you&apos;ll land on your install code. No app deployment or email-provider setup is required.</p>
     <p><strong>Self-hosted:</strong> clone the repository, run the app on your own domain, and connect your own email service when you are ready to move beyond the included console-only mail adapter.</p>
 
     <h2>Practice, not phishing</h2>

@@ -3,9 +3,12 @@ import Link from "next/link";
 import { BOT_INSTALL_URL } from "../lib/bot-install";
 import scenarios from "../lib/scenarios.json";
 import { OnboardingSteps } from "./onboarding-steps";
+import { auth } from "../auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
   return <>
+    {session?.user && <section className="bot-card"><div><span className="eyebrow">Organizer setup</span><h2>Finish connecting your bot.</h2><p>Your organizer email is verified. Get the install code to connect the bot.</p></div><Link className="button" href="/install">Get install code →</Link></section>}
     <section className="hero">
       <div className="hero-copy">
         <span className="eyebrow">Scam practice for families</span>
