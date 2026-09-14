@@ -21,11 +21,13 @@ test("bot installation requires the authenticated organizer instead of trusting 
   assert.doesNotMatch(route, /request\.json|body\.email/);
 });
 
-test("magic links remain console-only while drill delivery can use Resend", async () => {
-  const [auth, env, mail, store] = await Promise.all([read("../auth.ts"), read("../.env.example"), read("../lib/mail.ts"), read("../lib/store.ts")]);
-  assert.match(auth, /\[auth:magic-link\]/);
-  assert.doesNotMatch(auth, /sendMail|createTransport/);
+test("magic links and drill delivery use the configured Resend account", async () => {
+  const [auth, authEmail, env, mail, store] = await Promise.all([read("../auth.ts"), read("../lib/auth-email.ts"), read("../.env.example"), read("../lib/mail.ts"), read("../lib/store.ts")]);
+  assert.match(auth, /sendAuthVerificationEmail/);
+  assert.match(authEmail, /new Resend\(apiKey\)/);
+  assert.match(authEmail, /NODE_ENV === "production"/);
   assert.match(env, /RESEND_API_KEY=/);
+  assert.match(env, /EMAIL_FROM_AUTH=/);
   assert.match(mail, /process\.env\.MAIL_ADAPTER !== "resend"/);
   assert.match(store, /getMailAdapter\(\)\.sendDrill/);
 });

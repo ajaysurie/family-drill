@@ -28,7 +28,7 @@ npm test
 npm run dev
 ```
 
-Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. The hosted values are `https://app.familydrill.com`; replace both with your own origin when self-hosting. Sign in at `/login` with an organizer email. Copy the `[auth:magic-link]` URL from the server console. Organizer login mail is intentionally console-stubbed until an email service is selected; do not configure real delivery credentials.
+Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. The hosted values are `https://app.familydrill.com`; replace both with your own origin when self-hosting. Sign in at `/login` with an organizer email. In development without a Resend key, copy the `[auth:magic-link]` URL from the server console.
 
 For production metrics, enable Web Analytics and Speed Insights in the Vercel project if they are not already enabled. Their packages send no data during local development.
 
@@ -40,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000), then try these self-hosted 
 
 The home page, `/docs/*`, and `/d/[token]` are public. Auth.js gates `/household` and `/admin`; their server actions also require the organizer session, and database queries scope records to that organizer.
 
-`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console by default. For production drill delivery, set `MAIL_ADAPTER=resend`, `RESEND_API_KEY` to a Resend API key, and `EMAIL_FROM` to a sender on a verified domain. Resend uses that verified sender as the envelope From while retaining the fictional scenario identity only inside the rendered drill. Organizer magic links remain console-only.
+`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console by default. For production drill delivery, set `MAIL_ADAPTER=resend`, `RESEND_API_KEY` to a Resend API key, and `EMAIL_FROM` to a sender on a verified domain. The same Resend key sends organizer magic links in production. Set `EMAIL_FROM_AUTH` to use a different verified sender for sign-in mail; otherwise it falls back to `EMAIL_FROM`. Production sign-in fails loudly if `RESEND_API_KEY` is absent, while local development logs the magic link when no key is configured. Resend uses the verified sender as the envelope From while retaining the fictional scenario identity only inside rendered drills.
 
 Bot builders can use the repository's [eggbot API contract](docs/bot-api.md) for authentication, endpoint, drill queue, event, pause/resume, and safety details. The public bot page stays focused on organizer setup.
 
