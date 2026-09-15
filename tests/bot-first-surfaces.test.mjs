@@ -4,19 +4,22 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("legacy web organizer pages point people to the primary bot flow", async () => {
+test("optional web organizer tools are honest and keep the bot primary", async () => {
   const [admin, household] = await Promise.all([
     read("../app/admin/page.tsx"),
     read("../app/household/page.tsx"),
   ]);
 
   for (const page of [admin, household]) {
-    assert.match(page, /Legacy web demo/);
+    assert.match(page, /optional organizer tool/);
     assert.match(page, /href="\/docs\/bot"/);
     assert.match(page, /See bot setup/);
+    assert.doesNotMatch(page, /demo|console only/i);
   }
-  assert.match(admin, /Send demo drill/);
-  assert.match(household, /Add demo member/);
+  assert.match(admin, /Send drill/);
+  assert.match(admin, /role="alert"/);
+  assert.match(household, /Add family member/);
+  assert.match(household, /activate household/);
 });
 
 test("documentation navigation leads with bot installation", async () => {
