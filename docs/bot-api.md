@@ -103,7 +103,7 @@ Sets `householdPaused` to `true` and returns the install's public state.
 
 #### `POST /api/bot/resume`
 
-Sets `householdPaused` to `false` and returns the install's public state. Resume does not override a draft/inactive household agreement.
+Sets `householdPaused` to `false` and returns the install's public state. Resume does not itself activate an agreement; the next authenticated write from an active, unpaused legacy install activates a draft agreement automatically.
 
 Pausing blocks roster writes and new drills. Read-only install, health, member, event, and drill-detail requests remain available. An inactive install token cannot authenticate at all.
 
