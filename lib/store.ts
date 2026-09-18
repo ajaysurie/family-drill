@@ -26,7 +26,16 @@ export async function authenticateBot(token: string | null) { await ensureSchema
 export async function getInstall(token: string) { await ensureSchema(); const row = await installForToken(token); return row ? publicInstall({ ...row.install, organizerEmail: row.organizerEmail }) : undefined; }
 export async function verifyInstall(organizerId: string) { await ensureSchema(); const household = await getHousehold(organizerId); if (!household) return; await activateHousehold(organizerId); const token = crypto.randomUUID(); const [row] = await db.insert(botInstalls).values({ householdId: household.id, token, active: 1, householdPaused: 0 }).onConflictDoUpdate({ target: botInstalls.householdId, set: { token, active: 1, householdPaused: 0 } }).returning(); return { ...publicInstall(row), installId: row.id, botToken: token }; }
 export async function setPaused(organizerId: string, paused: boolean) { await ensureSchema(); const [row] = await db.update(botInstalls).set({ householdPaused: paused ? 1 : 0 }).from(householdAgreements).where(and(eq(botInstalls.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).returning(); return row ? publicInstall(row) : undefined; }
-export async function canOperate(organizerId: string) { await ensureSchema(); const [row] = await db.select({ active: botInstalls.active, paused: botInstalls.householdPaused, status: householdAgreements.status }).from(botInstalls).innerJoin(householdAgreements, eq(botInstalls.householdId, householdAgreements.id)).where(eq(householdAgreements.organizerId, organizerId)); return Boolean(row?.active && !row.paused && row.status === "active"); }
+async function getOperationState(organizerId: string) { const [row] = await db.select({ active: botInstalls.active, paused: botInstalls.householdPaused, status: householdAgreements.status }).from(botInstalls).innerJoin(householdAgreements, eq(botInstalls.householdId, householdAgreements.id)).where(eq(householdAgreements.organizerId, organizerId)); return row; }
+export async function canOperate(organizerId: string) {
+  await ensureSchema();
+  let state = await getOperationState(organizerId);
+  if (state?.active && !state.paused && state.status === "draft") {
+    await activateHousehold(organizerId);
+    state = await getOperationState(organizerId);
+  }
+  return Boolean(state?.active && !state.paused && state.status === "active");
+}
 
 export async function findAttempt(token: string) { await ensureSchema(); const [row] = await db.select().from(attempts).where(eq(attempts.drillToken, token)); return row ? attempt(row) : undefined; }
 export async function findAttemptById(organizerId: string, id: string) { await ensureSchema(); const [row] = await db.select({ attempt: attempts }).from(attempts).innerJoin(members, eq(attempts.memberId, members.id)).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).where(eq(attempts.id, id)); return row ? attempt(row.attempt) : undefined; }
