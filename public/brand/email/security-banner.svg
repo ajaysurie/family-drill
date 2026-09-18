@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 150" role="img" aria-labelledby="t d">
+ <title id="t">Account alert illustration</title><desc id="d">A high contrast alert for the fictional Riverline brand</desc>
+ <rect width="580" height="150" fill="#351616"/><circle cx="92" cy="75" r="38" fill="#8f251d"/><text x="92" y="91" text-anchor="middle" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="white">!</text>
+ <text x="156" y="65" font-family="Arial,sans-serif" font-size="12" letter-spacing="2" fill="#ffb8ad">ACCOUNT ALERT</text><text x="156" y="94" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="white">Review unusual activity</text>
+</svg>

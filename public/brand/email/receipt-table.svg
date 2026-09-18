@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 150" role="img" aria-labelledby="t d">
+ <title id="t">Payment summary illustration</title><desc id="d">A paper receipt for a fictional billing notice</desc>
+ <rect width="580" height="150" fill="#f4f0e8"/><path d="M208 16h164v120l-10-7-10 7-10-7-10 7-10-7-10 7-10-7-10 7-10-7-10 7-10-7-10 7-10-7-10 7z" fill="white" stroke="#d8d0c2"/>
+ <text x="290" y="48" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700">PAYMENT SUMMARY</text><path d="M230 66h120M230 84h72M322 84h28M230 102h62M312 102h38" stroke="#a69d8f" stroke-width="5"/>
+</svg>
