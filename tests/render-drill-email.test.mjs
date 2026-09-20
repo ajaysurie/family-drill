@@ -26,3 +26,11 @@ for (const id of ["parcel-redelivery", "payment-failed", "stream-renewal", "viru
 }
 
 test("layout archetypes render distinct HTML", () => { const rendered = ["parcel-redelivery","payment-failed","stream-renewal","virus-warning"].map(id => renderDrillEmail(scenarios.find(s=>s.id===id), member, "https://example.test/d/x").html); assert.equal(new Set(rendered).size, 4); });
+
+test("each layout has a self-contained, mail-safe hero", () => {
+  for (const scenario of scenarios) {
+    const html = renderDrillEmail(scenario, member, "https://example.test/d/x").html;
+    assert.match(html, new RegExp(`data-layout-hero="${scenario.layoutId}"`));
+    assert.doesNotMatch(html, /<img\b|\.svg\b|\.png\b|data:image/i);
+  }
+});

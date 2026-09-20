@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 150" role="img" aria-labelledby="t d">
+ <title id="t">Parcel journey illustration</title><desc id="d">A route between a depot and parcel for the fictional SwiftBox brand</desc>
+ <rect width="580" height="150" fill="#e8f0ff"/><text x="50" y="42" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#315582">PARCEL JOURNEY</text>
+ <circle cx="80" cy="91" r="13" fill="#315582"/><path d="M93 91h363" stroke="#315582" stroke-width="6" stroke-dasharray="18 10"/><path d="M456 69h54v44h-54zM456 69l27 18 27-18" fill="#fff" stroke="#315582" stroke-width="5" stroke-linejoin="round"/>
+</svg>

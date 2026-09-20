@@ -2,6 +2,8 @@
 
 Family Drill is an open-source web app for **household-agreed surprise email drills**. A family accepts one plain-language agreement. An organizer can then send household members unexpected, fictional messages. Opening a drill link shows the reveal and coach tips immediately.
 
+Email layout artwork is kept as editable SVG references in `public/brand/email`, while sent messages use equivalent inline table/CSS heroes for broad mail-client support. No binary email assets are stored in git or loaded by a message.
+
 This is practice under a prior household agreement. It is not covert phishing, surveillance, or brand impersonation. The app does not imitate real brands, relatives, banks, or government agencies. It does not request credentials or financial details, use tracking pixels, include attachments, or redirect to an external drill page. Reports count only an explicit button POST. A raw GET, email open, preview, or scanner prefetch does not count.
 
 ## Household agreement model
