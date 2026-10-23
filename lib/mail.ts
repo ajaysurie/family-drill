@@ -1,36 +1,49 @@
 import type { Attempt, Member, Scenario } from "./types";
 import { renderDrillEmail } from "./render-drill-email";
+import { appBaseUrl } from "./email-assets";
+import { headsUpEmail } from "./family-drill-email";
 import { Resend } from "resend";
 
 export type DrillMessage = { member: Member; scenario: Scenario; attempt: Attempt };
-export interface MailAdapter { sendDrill(message: DrillMessage): Promise<void> }
+export type HeadsUpMessage = { member: Member; organizer: string };
+export interface MailAdapter { sendDrill(message: DrillMessage): Promise<void>; sendHeadsUp(message: HeadsUpMessage): Promise<void> }
 
 type ResendClient = Pick<Resend, "emails">;
 
-export function createResendMailAdapter(client: ResendClient, from: string): MailAdapter {
-  return {
-    async sendDrill({ member, scenario, attempt }) {
-      const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
-      const message = renderDrillEmail(scenario, member, `${baseUrl}/${scenario.portalStage ? "p" : "d"}/${attempt.drillToken}`);
-      const { error } = await client.emails.send({
-        from,
-        to: message.to,
-        subject: message.subject,
-        text: message.text,
-        html: message.html,
-      });
+// Drills keep the verified sending address and borrow only the invented display name, so
+// "check the real address" is always a clue the family can catch.
+export const senderAddress = (from: string) => from.match(/<([^>]+)>/)?.[1] ?? from.trim();
+export const drillSender = () => process.env.MAIL_ADAPTER === "resend" && process.env.EMAIL_FROM ? senderAddress(process.env.EMAIL_FROM) : "drills@localhost";
+export const drillUrl = ({ scenario, attempt }: DrillMessage) => `${appBaseUrl()}/${scenario.portalStage ? "p" : "d"}/${attempt.drillToken}`;
+const renderDrill = (message: DrillMessage) => renderDrillEmail(message.scenario, message.member, drillUrl(message), appBaseUrl());
+const scheduledAt = (attempt: Attempt) => attempt.scheduledFor && Date.parse(attempt.scheduledFor) > Date.now() + 60_000 ? attempt.scheduledFor : undefined;
 
-      if (error) throw new Error(`Resend failed to send drill email: ${error.message}`);
+export function createResendMailAdapter(client: ResendClient, from: string): MailAdapter {
+  const send = async (payload: Parameters<ResendClient["emails"]["send"]>[0], kind: string) => {
+    const { error } = await client.emails.send(payload);
+    if (error) throw new Error(`Resend failed to send ${kind} email: ${error.message}`);
+  };
+  return {
+    async sendDrill(message) {
+      const email = renderDrill(message), when = scheduledAt(message.attempt);
+      await send({ from: `${email.fromName} <${senderAddress(from)}>`, to: email.to, subject: email.subject, text: email.text, html: email.html, headers: { "X-Family-Drill": "household-practice-drill" }, ...(when && { scheduledAt: when }) }, "drill");
+    },
+    async sendHeadsUp({ member, organizer }) {
+      const email = headsUpEmail(member.name, organizer);
+      await send({ from, to: member.email, subject: email.subject, text: email.text, html: email.html }, "heads-up");
     },
   };
 }
 
 export const consoleMailAdapter: MailAdapter = {
-  async sendDrill({ member, scenario, attempt }) {
-    const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
-    const message = renderDrillEmail(scenario, member, `${baseUrl}/${scenario.portalStage ? "p" : "d"}/${attempt.drillToken}`);
-    console.log(`[mail:stub]\nFrom: ${message.from}\nTo: ${message.to}\nSubject: ${message.subject}\n\n${message.text}\n\n[HTML: ${Buffer.byteLength(message.html)} bytes]`);
-  }
+  async sendDrill(message) {
+    const email = renderDrill(message);
+    console.log(`[mail:stub]\nFrom: ${email.fromName} <${drillSender()}>\nTo: ${email.to}\nSubject: ${email.subject}\nScheduled: ${scheduledAt(message.attempt) ?? "now"}\n\n${email.text}\n\n[HTML: ${Buffer.byteLength(email.html)} bytes]`);
+  },
+  async sendHeadsUp({ member, organizer }) {
+    const email = headsUpEmail(member.name, organizer);
+    console.log(`[mail:stub]\nTo: ${member.email}\nSubject: ${email.subject}\n\n${email.text}`);
+  },
 };
 
 export function getMailAdapter(): MailAdapter {

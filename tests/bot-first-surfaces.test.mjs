@@ -44,7 +44,9 @@ test("published bot install is available across organizer-facing pages", async (
     assert.match(organizerPage, /BOT_INSTALL_URL/);
     assert.doesNotMatch(organizerPage, /Template not published|not public yet|not published yet/i);
   }
-  assert.match(steps, /Paste the install code/);
+  assert.match(steps, /paste the install code into the bot chat/);
+  assert.match(page, /<AssistantSetup appUrl=\{appBaseUrl\(\)\} \/>/);
+  assert.match(page, /href="\/agent\.md"/);
   assert.match(page, /github\.com\/ajaysurie\/family-drill\/blob\/main\/docs\/bot-api\.md/);
   assert.doesNotMatch(page, /\/api\/bot\//);
   assert.doesNotMatch(page, /Authorization:/);
@@ -70,10 +72,10 @@ test("organizer pages explain the complete bot-chat onboarding path", async () =
     assert.match(page, /bot (?:their names and email addresses in the bot chat|chat)/);
     assert.match(page, /no hosted website form/i);
   }
-  for (const phrase of ["Install the bot", "app.familydrill.com", "Copy the install code", "Paste the install code into the bot chat", "relative's name and email address", "bot sends the drills", "bot chat to review"]) {
+  for (const phrase of ["Sign in with your email", "Connect your AI assistant", "Grok Bot", "Meta Muse", "paste the install code into the bot chat", "relative's name and email address", "bot sends the drills", "bot chat to review"]) {
     assert.match(steps, new RegExp(phrase.replaceAll(".", "\\.")));
   }
-  assert.match(steps, /https:\/\/app\.familydrill\.com\/login/);
+  assert.match(steps, /\$\{HOSTED_LOGIN_URL\}/);
   assert.match(steps, /land on the page with your install code/);
   assert.match(home, /session\?\.user/);
   assert.match(home, /href="\/install">Get install code/);

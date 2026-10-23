@@ -1,53 +1,54 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { pathToFileURL } from "node:url";
-import path from "node:path";
-import ts from "typescript";
+import { loadLib } from "./helpers/load-ts.mjs";
 
-const tempDirectory = await mkdtemp(path.join(process.cwd(), ".mail-test-"));
-const compile = async (name) => {
-  const source = await readFile(new URL(`../lib/${name}.ts`, import.meta.url), "utf8");
-  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-    .replace('"./render-drill-email"', '"./render-drill-email.js"').replace('"./brands"', '"./brands.js"');
-  await writeFile(path.join(tempDirectory, `${name}.js`), output);
-};
+const lib = await loadLib(["brands.ts", "email-assets.ts", "render-drill-email.ts", "family-drill-email.ts", "mail.ts"]);
+const { consoleMailAdapter, createResendMailAdapter, getMailAdapter, senderAddress } = await lib.import("mail");
+test.after(lib.cleanup);
 
-await writeFile(path.join(tempDirectory, "package.json"), '{"type":"module"}');
-await compile("brands");
-await compile("render-drill-email");
-await compile("mail");
-const { consoleMailAdapter, createResendMailAdapter, getMailAdapter } = await import(pathToFileURL(path.join(tempDirectory, "mail.js")));
+const scenario = { id: "parcel-redelivery", category: "delivery", layoutId: "cta-hero", brandId: "swiftbox", fromName: "Parcel Notice", subject: "Delivery update", preview: "An update", heroTitle: "Update", heroCaption: "Parcel waiting", bodyParagraphs: ["Please review."], footerLines: ["Parcel Notice"], clues: [], lesson: ["a", "b", "c"] };
+const member = { id: "member-1", name: "Maya", email: "maya@example.test", householdId: "home-1" };
+const drill = (scheduledFor) => ({ member, scenario, attempt: { drillToken: "token-1", scheduledFor } });
+const fakeResend = (calls) => ({ emails: { send: async (payload) => { calls.push(payload); return { data: { id: "email-1" }, error: null }; } } });
 
-const drill = {
-  member: { id: "member-1", name: "Maya", email: "maya@example.test", householdId: "home-1" },
-  scenario: { category: "delivery", layoutId: "cta-hero", brandId: "swiftbox", fromName: "Parcel Notice", fromLocalPart: "updates", fromDomain: "parcel-notice.test", subject: "Delivery update", preview: "An update", bodyParagraphs: ["Please review."], footerLines: ["Parcel Notice"] },
-  attempt: { drillToken: "token-1" },
-};
-
-test.after(async () => rm(tempDirectory, { recursive: true, force: true }));
-
-test("Resend adapter sends the rendered multipart payload from the verified sender", async () => {
+test("drills borrow only the fictional display name and keep the verified address", async () => {
   const calls = [];
-  const adapter = createResendMailAdapter({ emails: { send: async (payload) => { calls.push(payload); return { data: { id: "email-1" }, error: null }; } } }, "Family Drill <drills@familydrill.com>");
-  await adapter.sendDrill(drill);
-
+  await createResendMailAdapter(fakeResend(calls), "Family Drill <drills@familydrill.com>").sendDrill(drill());
   assert.equal(calls.length, 1);
-  assert.deepEqual(calls[0], {
-    from: "Family Drill <drills@familydrill.com>",
-    to: "maya@example.test",
-    subject: "Delivery update",
-    text: "Hello Maya,\n\nPlease review.\n\nView details: http://localhost:3000/d/token-1\n\nParcel Notice",
-    html: calls[0].html,
-  });
+  assert.equal(calls[0].from, "Parcel Notice <drills@familydrill.com>");
+  assert.equal(calls[0].to, "maya@example.test");
+  assert.equal(calls[0].subject, "Delivery update");
+  assert.equal(calls[0].headers["X-Family-Drill"], "household-practice-drill");
+  assert.equal(calls[0].scheduledAt, undefined);
+  assert.match(calls[0].text, /http:\/\/localhost:3000\/d\/token-1/);
   assert.match(calls[0].html, /http:\/\/localhost:3000\/d\/token-1/);
+});
+
+test("future drills are handed to Resend's scheduler", async () => {
+  const calls = [], later = new Date(Date.now() + 6 * 3_600_000).toISOString();
+  await createResendMailAdapter(fakeResend(calls), "drills@familydrill.com").sendDrill(drill(later));
+  assert.equal(calls[0].scheduledAt, later);
+  assert.equal(calls[0].from, "Parcel Notice <drills@familydrill.com>");
+});
+
+test("heads-up email is honest, branded, and comes from Family Drill", async () => {
+  const calls = [];
+  await createResendMailAdapter(fakeResend(calls), "Family Drill <drills@familydrill.com>").sendHeadsUp({ member, organizer: "Alex" });
+  assert.equal(calls[0].from, "Family Drill <drills@familydrill.com>");
+  assert.match(calls[0].subject, /Alex added you to Family Drill/);
+  assert.match(calls[0].text, /made up/);
+  assert.match(calls[0].text, /Tell Alex/);
+  assert.match(calls[0].html, /email-assets\/logo\/family-drill\.png/);
+});
+
+test("sender parsing accepts bare and named addresses", () => {
+  assert.equal(senderAddress("Family Drill <drills@familydrill.com>"), "drills@familydrill.com");
+  assert.equal(senderAddress("drills@familydrill.com"), "drills@familydrill.com");
 });
 
 test("adapter selection defaults to the console and fails loudly without a Resend key", () => {
   const previous = { adapter: process.env.MAIL_ADAPTER, key: process.env.RESEND_API_KEY };
   delete process.env.MAIL_ADAPTER;
-  assert.equal(getMailAdapter(), consoleMailAdapter);
-  process.env.MAIL_ADAPTER = "console";
   assert.equal(getMailAdapter(), consoleMailAdapter);
   process.env.MAIL_ADAPTER = "unknown";
   assert.equal(getMailAdapter(), consoleMailAdapter);
@@ -59,14 +60,9 @@ test("adapter selection defaults to the console and fails loudly without a Resen
 });
 
 test("console adapter logs the stub without using Resend", async () => {
-  const lines = [];
-  const originalLog = console.log;
+  const lines = [], originalLog = console.log;
   console.log = (line) => lines.push(line);
-  try {
-    await consoleMailAdapter.sendDrill(drill);
-  } finally {
-    console.log = originalLog;
-  }
+  try { await consoleMailAdapter.sendDrill(drill()); } finally { console.log = originalLog; }
   assert.equal(lines.length, 1);
   assert.match(lines[0], /^\[mail:stub\]/);
   assert.match(lines[0], /To: maya@example\.test/);

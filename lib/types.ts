@@ -4,6 +4,7 @@ export type HouseholdAgreement = {
   termsVersion: string;
   status: "draft" | "active";
   activatedAt?: string;
+  timeZone?: string;
 };
 
 export type Member = { id: string; name: string; email: string; householdId: string };
@@ -11,10 +12,12 @@ export type Attempt = { id: string; memberId: string; scenarioId: string; drillT
 export type DrillEvent = {
   id: string;
   attemptId: string;
-  type: "drill.sent" | "drill.revealed" | "lure.engaged" | "credentials.submitted" | "drill.failed";
+  type: DrillEventType;
   occurredAt: string;
   summary: string;
 };
+export type DrillEventType = "drill.sent" | "drill.revealed" | "lure.engaged" | "credentials.submitted" | "drill.reported" | "drill.failed";
+export type Clue = { label: string; detail: string };
 export type Scenario = {
   id: string;
   category: ScenarioCategory;
@@ -24,11 +27,14 @@ export type Scenario = {
   subject: string;
   preview: string;
   lesson: [string, string, string];
+  clues: Clue[];
+  heroTitle: string;
+  heroCaption: string;
+  reference?: { label: string; value: string };
   fromLocalPart?: string;
   fromDomain?: string;
   preheader?: string;
   bodyParagraphs?: string[];
-  bodyHtml?: string;
   ctaLabel?: string;
   footerLines?: string[];
   portalStage?: boolean;
@@ -36,7 +42,7 @@ export type Scenario = {
   lineItems?: { label: string; amount: string }[];
 };
 export type ScenarioCategory = "delivery" | "bank-payment" | "subscriptions" | "tech-support" | "school-kids" | "account-lockout";
-export type BrandId = "swiftbox" | "riverline" | "streamly" | "softshield" | "maple-district" | "paynest";
+export type BrandId = "swiftbox" | "riverline" | "streamly" | "softshield" | "maple-district" | "paynest" | "crestway" | "cloudnook" | "sharefold";
 export type BotInstall = {
   active: boolean;
   organizerEmail: string | null;

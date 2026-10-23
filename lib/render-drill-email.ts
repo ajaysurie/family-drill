@@ -1,30 +1,50 @@
-import { brandMark, brands } from "./brands";
+import { brands } from "./brands";
+import { HERO_SIZE, LOGO_HEIGHT, heroPath, logoPath, logoWidth } from "./email-assets";
 import type { Member, Scenario } from "./types";
 
-export type RenderedDrillEmail = { from: string; to: string; subject: string; text: string; html: string };
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-const button = (s: Scenario, url: string) => `<a href="${escapeHtml(url)}" style="display:inline-block;background:${brands[s.brandId].primary};color:#fff;text-decoration:none;font-weight:bold;padding:14px 23px;border-radius:6px">${escapeHtml(s.ctaLabel ?? "View details")}</a>`;
+export type RenderedDrillEmail = { fromName: string; to: string; subject: string; text: string; html: string };
+export const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-// These table-based illustrations deliberately avoid remote or SVG images: both are
-// inconsistently displayed by mail clients. Keep them simple, distinct, and inline.
-const layoutHero = (layoutId: Scenario["layoutId"]) => {
-  if (layoutId === "cta-hero") return `<table data-layout-hero="cta-hero" role="presentation" width="100%" cellspacing="0" style="background:#dff7ee"><tr><td align="center" style="padding:25px 18px"><div style="font-size:38px;line-height:1">◆</div><div style="margin-top:9px;font-size:13px;font-weight:bold;letter-spacing:2px;color:#174d3c">DEVICE CHECK</div></td></tr></table>`;
-  if (layoutId === "security-banner") return `<table data-layout-hero="security-banner" role="presentation" width="100%" cellspacing="0" style="background:#351616;color:#fff"><tr><td width="84" align="center" style="padding:22px 0;font-size:36px">!</td><td style="padding:22px 22px 22px 0"><div style="font-size:12px;letter-spacing:2px;color:#ffb8ad">ACCOUNT ALERT</div><div style="margin-top:5px;font-size:20px;font-weight:bold">Review unusual activity</div></td></tr></table>`;
-  if (layoutId === "receipt-table") return `<table data-layout-hero="receipt-table" role="presentation" width="100%" cellspacing="0" style="background:#f4f0e8"><tr><td align="center" style="padding:22px"><table role="presentation" cellspacing="0" style="width:176px;background:#fff;border:1px solid #d8d0c2"><tr><td style="padding:13px 16px;border-bottom:2px dashed #d8d0c2;font-size:12px;font-weight:bold">PAYMENT SUMMARY</td></tr><tr><td style="padding:12px 16px;color:#777;font-size:11px">ITEM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AMOUNT</td></tr></table></td></tr></table>`;
-  return `<table data-layout-hero="tracking-card" role="presentation" width="100%" cellspacing="0" style="background:#e8f0ff"><tr><td style="padding:25px 28px"><div style="font-size:12px;font-weight:bold;letter-spacing:2px;color:#315582">PARCEL JOURNEY</div><table role="presentation" width="100%" cellspacing="0" style="margin-top:17px"><tr><td width="22" style="font-size:22px;color:#315582">●</td><td style="border-top:4px solid #315582">&nbsp;</td><td width="30" align="right" style="font-size:25px">□</td></tr></table></td></tr></table>`;
-};
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const MUTED = "#6b7280", RULE = "#e5e7eb";
 
-export function renderDrillEmail(s: Scenario, member: Member, url: string): RenderedDrillEmail {
+const button = (label: string, url: string, color: string, align = "left") => `<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="${align}" style="margin:28px 0 8px"><tr><td bgcolor="${color}" style="border-radius:8px"><a href="${escapeHtml(url)}" style="display:inline-block;padding:15px 30px;font-family:${FONT};font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px">${escapeHtml(label)}</a></td></tr></table>`;
+const paragraph = (text: string) => `<p style="margin:0 0 16px;font-size:16px;line-height:1.55;color:#1f2937">${escapeHtml(text)}</p>`;
+const keyValueTable = (rows: [string, string][], strongLast = false) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0 4px;border:1px solid ${RULE};border-radius:8px;border-collapse:separate">${rows.map(([label, value], index) => { const strong = strongLast && index === rows.length - 1; return `<tr><td style="padding:13px 16px;font-size:14px;color:${strong ? "#111827" : MUTED};${strong ? "font-weight:700;" : ""}${index ? `border-top:1px solid ${RULE};` : ""}">${escapeHtml(label)}</td><td align="right" style="padding:13px 16px;font-size:14px;color:#111827;font-weight:${strong ? 800 : 600};${index ? `border-top:1px solid ${RULE};` : ""}">${escapeHtml(value)}</td></tr>`; }).join("")}</table>`;
+
+function layoutBody(s: Scenario, url: string, greeting: string, copy: string) {
+  const b = brands[s.brandId];
+  const reference: [string, string][] = s.reference ? [[s.reference.label, s.reference.value]] : [];
+  if (s.layoutId === "cta-hero") return `<td align="center" style="padding:36px 40px 30px;text-align:center"><h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;color:#111827">${escapeHtml(s.subject)}</h1>${greeting}${copy}${button(s.ctaLabel ?? "View details", url, b.primary, "center")}<p style="clear:both;margin:14px 0 0;font-size:13px;color:${MUTED}">It only takes a minute.</p></td>`;
+  if (s.layoutId === "security-banner") return `<td style="padding:34px 40px 30px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 22px"><tr><td style="padding:14px 16px;background:#fef2f2;border-left:4px solid #dc2626;border-radius:4px;font-size:14px;line-height:1.5;color:#7f1d1d"><strong>Action required:</strong> ${escapeHtml(s.preheader ?? s.preview)}</td></tr></table>${greeting}${copy}${keyValueTable([...reference, ["Status", s.heroCaption], ["Detected", "Today"]])}${button(s.ctaLabel ?? "Review now", url, b.primary)}<p style="clear:both;margin:18px 0 0;font-size:13px;line-height:1.5;color:${MUTED}">If you do not respond, we may limit access to protect your account.</p></td>`;
+  if (s.layoutId === "receipt-table") return `<td style="padding:34px 40px 30px"><p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${b.primary}">${escapeHtml(s.heroTitle)}</p><h1 style="margin:0 0 20px;font-size:24px;line-height:1.3;color:#111827">${escapeHtml(s.subject)}</h1>${greeting}${copy}${keyValueTable([...reference, ...(s.lineItems ?? []).map((item): [string, string] => [item.label, item.amount])], Boolean(s.lineItems?.length))}${button(s.ctaLabel ?? "View invoice", url, b.primary)}</td>`;
+  const steps = ["Received", "In transit", s.heroTitle];
+  const tracker = `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0 6px"><tr>${steps.map((step, index) => `<td width="33%" valign="top" style="padding:0 4px"><div style="height:6px;border-radius:3px;background:${index < 2 ? b.primary : "#f59e0b"}"></div><p style="margin:9px 0 0;font-size:12px;line-height:1.35;font-weight:${index === 2 ? 700 : 500};color:${index === 2 ? "#92400e" : MUTED}">${escapeHtml(step)}</p></td>`).join("")}</tr></table>`;
+  return `<td style="padding:34px 40px 30px"><h1 style="margin:0 0 20px;font-size:24px;line-height:1.3;color:#111827">${escapeHtml(s.subject)}</h1>${greeting}${copy}${tracker}${reference.length ? keyValueTable(reference) : ""}${button(s.ctaLabel ?? "View details", url, b.primary)}</td>`;
+}
+
+// `assetBase` is the absolute app origin for real mail, or "" for in-site previews.
+export function renderDrillEmail(s: Scenario, member: Member, url: string, assetBase: string): RenderedDrillEmail {
   const b = brands[s.brandId], paragraphs = s.bodyParagraphs ?? [], footerLines = s.footerLines ?? [];
-  const copy = paragraphs.map((p) => `<p style="margin:0 0 16px">${escapeHtml(p)}</p>`).join("");
-  const greeting = `<p style="margin:0 0 16px">Hello ${escapeHtml(member.name)},</p>`;
-  let content: string;
-  if (s.layoutId === "cta-hero") content = `${layoutHero(s.layoutId)}<div style="padding:34px;text-align:center;background:${b.accent}">${brandMark(s.brandId)}<h1 style="font-size:28px;margin:28px 0 12px;color:${b.primary}">${escapeHtml(s.subject)}</h1>${greeting}${copy}<p style="margin:26px 0">${button(s,url)}</p></div>`;
-  else if (s.layoutId === "security-banner") content = `${layoutHero(s.layoutId)}<div style="padding:30px;border-left:6px solid ${b.accent}">${brandMark(s.brandId)}<div style="height:20px"></div>${greeting}${copy}<p style="margin:24px 0">${button(s,url)}</p></div>`;
-  else if (s.layoutId === "receipt-table") { const rows = (s.lineItems ?? [{label:"Monthly plan",amount:"$19.80"}]).map(i => `<tr><td style="padding:11px;border-bottom:1px solid #ddd">${escapeHtml(i.label)}</td><td align="right" style="padding:11px;border-bottom:1px solid #ddd">${escapeHtml(i.amount)}</td></tr>`).join(""); content = `${layoutHero(s.layoutId)}<div style="padding:28px">${brandMark(s.brandId)}<p style="font-size:12px;color:#666;text-transform:uppercase">Receipt notice</p>${greeting}${copy}<table width="100%" cellspacing="0" style="margin:20px 0;background:#fafafa">${rows}</table><p>${button(s,url)}</p></div>`; }
-  else content = `${layoutHero(s.layoutId)}<div style="padding:28px">${brandMark(s.brandId)}<h1 style="font-size:24px;color:${b.primary}">${escapeHtml(s.subject)}</h1>${greeting}${copy}<table width="100%" style="margin:24px 0"><tr>${["Received","In transit","Delivery issue"].map((x,i)=>`<td align="center" style="border-top:5px solid ${i<2?b.primary:b.accent};padding-top:9px;font-size:12px">${x}</td>`).join("")}</tr></table><p>${button(s,url)}</p></div>`;
-  const footer = footerLines.map(escapeHtml).join("<br>");
-  const html = `<!doctype html><html><body style="margin:0;background:#eef0ee;font-family:Arial,sans-serif;color:#242424"><span style="display:none">${escapeHtml(s.preheader ?? s.preview)}</span><table role="presentation" width="100%"><tr><td align="center" style="padding:28px 12px"><table role="presentation" width="580" style="max-width:100%;background:#fff;border-collapse:collapse"><tr><td>${content}</td></tr><tr><td style="padding:16px 28px;font-size:11px;color:#777;border-top:1px solid #ddd">${footer}<br><a href="${escapeHtml(url)}">Open details</a></td></tr></table></td></tr></table></body></html>`;
-  const text = [`Hello ${member.name},`, ...paragraphs, `${s.ctaLabel ?? "View details"}: ${url}`, ...footerLines].join("\n\n");
-  return { from: `${s.fromName} <${s.fromLocalPart ?? "alerts"}@${s.fromDomain ?? "notice.test"}>`, to: member.email, subject: s.subject, text, html };
+  const greeting = paragraph(`Hello ${member.name},`);
+  const copy = paragraphs.map(paragraph).join("");
+  const preheader = escapeHtml(s.preheader ?? s.preview) + "&nbsp;&zwnj;".repeat(60);
+  const logo = `<img src="${assetBase}${logoPath(s.brandId)}" width="${logoWidth(b.name)}" height="${LOGO_HEIGHT}" alt="${escapeHtml(b.name)}" style="display:block;border:0;font-size:20px;font-weight:800;color:${b.primary}">`;
+  const hero = `<img data-layout-hero="${s.layoutId}" src="${assetBase}${heroPath(s.id)}" width="${HERO_SIZE.width}" height="${HERO_SIZE.height}" alt="${escapeHtml(`${s.heroTitle}. ${s.heroCaption}`)}" style="display:block;width:100%;max-width:${HERO_SIZE.width}px;height:auto;border:0;font-size:18px;font-weight:700;color:#ffffff">`;
+  const meta = s.reference ? `<td align="right" style="font-size:12px;line-height:1.4;color:${MUTED}">${escapeHtml(s.reference.label)}<br><strong style="color:#111827">${escapeHtml(s.reference.value)}</strong></td>` : "";
+  const footerLink = (label: string) => `<a href="${escapeHtml(url)}" style="color:${MUTED};text-decoration:underline">${label}</a>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>${escapeHtml(s.subject)}</title></head>`
+    + `<body style="margin:0;padding:0;background:#f3f4f6;font-family:${FONT};color:#1f2937"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${preheader}</div>`
+    + `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f3f4f6"><tr><td align="center" style="padding:28px 12px">`
+    + `<table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid ${RULE};border-radius:12px;overflow:hidden;font-family:${FONT}">`
+    + `<tr><td style="padding:20px 32px;border-top:4px solid ${b.primary}"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>${logo}</td>${meta}</tr></table></td></tr>`
+    + `<tr><td bgcolor="${b.primary}">${hero}</td></tr>`
+    + `<tr>${layoutBody(s, url, greeting, copy)}</tr>`
+    + `<tr><td style="padding:22px 40px 28px;background:#f9fafb;border-top:1px solid ${RULE};font-size:12px;line-height:1.6;color:${MUTED}">`
+    + `<p style="margin:0 0 10px">${footerLines.map(escapeHtml).join("<br>")}</p>`
+    + `<p style="margin:0 0 10px">${footerLink("Help Center")} &nbsp;·&nbsp; ${footerLink("Privacy Policy")} &nbsp;·&nbsp; ${footerLink("Notification settings")}</p>`
+    + `<p style="margin:0">© ${new Date().getFullYear()} ${escapeHtml(b.legalName)}. This is an automated message, please do not reply.</p>`
+    + `</td></tr></table></td></tr></table></body></html>`;
+  const text = [`${b.name}`, s.subject, `Hello ${member.name},`, ...paragraphs, ...(s.reference ? [`${s.reference.label}: ${s.reference.value}`] : []), ...(s.lineItems ?? []).map((item) => `${item.label}: ${item.amount}`), `${s.ctaLabel ?? "View details"}: ${url}`, ...footerLines].join("\n\n");
+  return { fromName: s.fromName, to: member.email, subject: s.subject, text, html };
 }

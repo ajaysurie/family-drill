@@ -25,7 +25,8 @@ test("the runtime bootstrap applies the idempotent foundation and demo seed", as
 test("unknown reveal tokens still use the existing not-found path", async () => {
   const [store, page] = await Promise.all([read("../lib/store.ts"), read("../app/d/[token]/page.tsx")]);
   assert.match(store, /return row \? attempt\(row\) : undefined/);
-  assert.match(page, /if \(!attempt\) notFound\(\)/);
+  assert.match(store, /export async function getRevealContext/);
+  assert.match(page, /if \(!context\) notFound\(\)/);
 });
 
 test("requested marketing copy uses plain punctuation", async () => {
@@ -34,6 +35,10 @@ test("requested marketing copy uses plain punctuation", async () => {
     read("../app/layout.tsx"),
     read("../app/docs/start/page.tsx"),
     read("../app/docs/bot/page.tsx"),
+    read("../app/learn/page.tsx"),
+    read("../app/onboarding-steps.tsx"),
+    read("../app/assistant-setup.tsx"),
+    read("../lib/agent-guide.ts"),
   ])).join("\n");
   assert.doesNotMatch(copy, /[—“”‘’]/);
   assert.doesNotMatch(copy, /feel familiar|becomes a lesson, not a trap|look believable at a glance/i);

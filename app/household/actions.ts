@@ -19,6 +19,6 @@ export async function createMember(formData: FormData) {
 
 export async function savePreferences(formData: FormData) {
   const session = await auth(); if (!session?.user?.id) throw new Error("Organizer session required");
-  await setDrillPreferences(session.user.id, allCategories.filter((category) => formData.getAll("category").includes(category)), formData.get("smsPreview") === "on");
+  await setDrillPreferences(session.user.id, { enabledCategories: allCategories.filter((category) => formData.getAll("category").includes(category)), smsPreview: formData.get("smsPreview") === "on" });
   revalidatePath("/household");
 }

@@ -1,20 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { pathToFileURL } from "node:url";
-import path from "node:path";
-import ts from "typescript";
+import { loadLib } from "./helpers/load-ts.mjs";
 
-const tempDirectory = await mkdtemp(path.join(process.cwd(), ".auth-email-test-"));
-const source = await readFile(new URL("../lib/auth-email.ts", import.meta.url), "utf8");
-const output = ts.transpileModule(source, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-await writeFile(path.join(tempDirectory, "package.json"), '{"type":"module"}');
-await writeFile(path.join(tempDirectory, "auth-email.js"), output);
-const { createResendVerificationEmailSender, sendAuthVerificationEmail } = await import(pathToFileURL(path.join(tempDirectory, "auth-email.js")));
+const lib = await loadLib(["brands.ts", "email-assets.ts", "render-drill-email.ts", "family-drill-email.ts", "auth-email.ts"]);
+const { createResendVerificationEmailSender, sendAuthVerificationEmail } = await lib.import("auth-email");
 
-test.after(async () => rm(tempDirectory, { recursive: true, force: true }));
+test.after(lib.cleanup);
 
 test("organizer verification sends the magic link through Resend", async () => {
   const calls = [];
@@ -33,7 +24,9 @@ test("organizer verification sends the magic link through Resend", async () => {
   assert.equal(calls[0].from, "Family Drill <login@familydrill.com>");
   assert.match(calls[0].subject, /Sign in to Family Drill/);
   assert.match(calls[0].text, /token=secret/);
-  assert.match(calls[0].html, /token=secret/);
+  assert.match(calls[0].html, /href="https:\/\/app\.familydrill\.com\/api\/auth\/callback\/nodemailer\?token=secret"/);
+  assert.match(calls[0].html, /alt="Family Drill"/);
+  assert.match(calls[0].text, /expires in 24 hours/);
 });
 
 test("production verification fails loudly without a Resend key", async () => {

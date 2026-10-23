@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { renderFamilyDrillEmail } from "./family-drill-email";
 
 type ResendClient = Pick<Resend, "emails">;
 
@@ -10,13 +11,14 @@ export type VerificationEmail = {
 
 export function createResendVerificationEmailSender(client: ResendClient) {
   return async ({ identifier, url, from }: VerificationEmail) => {
-    const { error } = await client.emails.send({
-      from,
-      to: identifier,
-      subject: "Sign in to Family Drill",
-      text: `Sign in to Family Drill:\n\n${url}\n\nIf you did not request this email, you can ignore it.`,
-      html: `<p>Sign in to Family Drill:</p><p><a href="${url}">Verify your email and continue</a></p><p>If you did not request this email, you can ignore it.</p>`,
+    const { html, text } = renderFamilyDrillEmail({
+      preheader: "Your one-time Family Drill sign-in link is inside.",
+      heading: "Sign in to Family Drill",
+      paragraphs: ["Tap the button below to verify your email and continue setting up your family's scam practice."],
+      button: { label: "Verify email and sign in", url },
+      footnote: "This link works once and expires in 24 hours. If you didn't ask to sign in, you can safely ignore this email.",
     });
+    const { error } = await client.emails.send({ from, to: identifier, subject: "Sign in to Family Drill", text, html });
 
     if (error) throw new Error(`Resend failed to send organizer verification email: ${error.message}`);
   };
