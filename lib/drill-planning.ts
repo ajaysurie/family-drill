@@ -2,6 +2,7 @@ import type { DrillEventType, Member, Scenario, ScenarioCategory } from "./types
 
 export const QUIET_HOURS = { start: 21, end: 8 } as const;
 export const MAX_SCHEDULE_LEAD_MS = 72 * 3_600_000;
+export const MAX_MEMBERS = 12;
 
 export function isValidTimeZone(timeZone: string) {
   try { new Intl.DateTimeFormat("en-US", { timeZone }); return true; } catch { return false; }

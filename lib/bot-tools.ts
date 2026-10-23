@@ -1,4 +1,4 @@
-import { categoryLabels, isValidTimeZone, QUIET_HOURS } from "./drill-planning";
+import { categoryLabels, isValidTimeZone, MAX_MEMBERS, QUIET_HOURS } from "./drill-planning";
 import { addMember, allCategories, canOperate, createBotDrill, deleteMember, getBotEvents, getDrillPreferences, getFamilyReport, getHousehold, getMembers, isPaused, listDrills, recordReport, scenarios, sendHeadsUp, setDrillPreferences, setPaused, updateMember, type DrillRequestError } from "./store";
 import type { ScenarioCategory } from "./types";
 
@@ -51,7 +51,9 @@ export const botTools: BotTool[] = [
   { name: "add_member", title: "Add a family member", readOnly: false, description: "Add a relative who agreed to receive practice emails. Ask the organizer before setting sendHeadsUp: the heads-up email tells the relative practice emails are coming, which is recommended so nobody is alarmed.", inputSchema: schema({ name: text("First name the emails should use, such as \"Ruth\"."), email: text("Their email address."), sendHeadsUp: { type: "boolean", description: "Send a friendly email explaining Family Drill and the 4-question scam check. Recommended." } }, ["name", "email"]), async run(organizerId, input) {
     if (!await canOperate(organizerId)) return paused();
     if (typeof input.name !== "string" || !input.name.trim() || typeof input.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim())) return fail(400, "invalid_member", "Provide a first name and a valid email address.");
-    if ((await getMembers(organizerId)).some((member) => member.email === (input.email as string).trim().toLowerCase())) return fail(409, "member_exists", "That email is already in the household. Use list_members.");
+    const existing = await getMembers(organizerId);
+    if (existing.some((member) => member.email === (input.email as string).trim().toLowerCase())) return fail(409, "member_exists", "That email is already in the household. Use list_members.");
+    if (existing.length >= MAX_MEMBERS) return fail(403, "household_full", `A household can have up to ${MAX_MEMBERS} members. Family Drill is for one family, not groups or workplaces.`);
     const member = await addMember(organizerId, input.name, input.email);
     if (!member) return fail(404, "household_not_found");
     const headsUpSent = input.sendHeadsUp === true && await sendHeadsUp(organizerId, member.id);
