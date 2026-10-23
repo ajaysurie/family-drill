@@ -13,7 +13,7 @@ export function renderFamilyDrillEmail(email: FamilyDrillEmail, assetBase = appB
     + `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f3efe3"><tr><td align="center" style="padding:32px 12px">`
     + `<table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;background:#fbfaf5;border:1px solid #d8dcd4;border-radius:16px;font-family:${FONT}">`
     + `<tr><td style="padding:28px 36px 0"><img src="${assetBase}${logoPath("family-drill")}" width="${logoWidth("Family Drill")}" height="${LOGO_HEIGHT}" alt="Family Drill" style="display:block;border:0;font-size:20px;font-weight:800;color:${INK}"></td></tr>`
-    + (email.illustration ? `<tr><td style="padding:22px 36px 0"><img src="${assetBase}/brand/hero-coaching.jpg" width="488" height="275" alt="${escapeHtml(email.illustration)}" style="display:block;width:100%;max-width:488px;height:auto;border:0;border-radius:14px"></td></tr>` : "")
+    + (email.illustration ? `<tr><td style="padding:22px 36px 0"><img src="${assetBase}/brand/family-check.jpg" width="488" height="267" alt="${escapeHtml(email.illustration)}" style="display:block;width:100%;max-width:488px;height:auto;border:0;border-radius:14px"></td></tr>` : "")
     + `<tr><td style="padding:26px 36px 8px"><h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.5px;color:${INK}">${escapeHtml(email.heading)}</h1>`
     + email.paragraphs.map((text) => `<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:${INK}">${escapeHtml(text)}</p>`).join("")
     + (email.button ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:26px 0 22px"><tr><td bgcolor="${GREEN}" style="border-radius:100px"><a href="${escapeHtml(email.button.url)}" style="display:inline-block;padding:14px 28px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:100px">${escapeHtml(email.button.label)}</a></td></tr></table>` : "")
@@ -37,7 +37,7 @@ export function headsUpEmail(memberName: string, organizer: string, appUrl = app
     ...renderFamilyDrillEmail({
       preheader: "Safe practice emails are coming. Here's what to expect.",
       heading: `Hi ${memberName}, practice emails are coming.`,
-      illustration: "A grandmother and her grown son smile at a laptop together",
+      illustration: "A grandmother squints at a message on her phone while her daughter points out what looks off",
       paragraphs: [
         `${organizer} is using Family Drill to help your family get better at spotting scam emails.`,
         "Sometime in the next few weeks you may get a practice email that looks like it's from a company. Every company in these emails is made up, and the emails are safe. If you click one, you'll see a short page with tips. Nothing bad happens, and no one is in trouble.",

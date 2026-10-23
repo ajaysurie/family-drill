@@ -37,7 +37,7 @@ export default async function Home() {
         <p className="works-with"><span>Works with</span><b>Grok Bot</b><b>Meta Muse</b><b>any MCP assistant</b></p>
         <p className="organizer-note"><strong>Only the organizer sets it up.</strong> Add relatives by telling the bot their names and email addresses in the bot chat. There is no hosted website form for family members.</p>
       </div>
-      <div className="hero-art"><Image src="/brand/hero-coaching.jpg" alt="A grandmother and her grown son smile at a laptop together, practicing how to spot a suspicious message" width={1600} height={900} priority /></div>
+      <div className="hero-art"><Image src="/brand/family-check.jpg" alt="A grandmother squints at a message on her phone while her daughter points out what looks off" width={1600} height={876} priority /></div>
     </section>
 
     <section className="drill-demo">
