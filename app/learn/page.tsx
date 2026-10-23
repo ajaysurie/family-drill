@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { scamChecks } from "../../lib/family-drill-email";
 import { realClickSteps } from "../lesson";
@@ -22,10 +23,12 @@ const conversations = [
 
 export default function LearnPage() {
   return <section className="learn">
+    <div className="learn-hero"><div>
     <span className="eyebrow">Teach your family</span>
     <h1>Spotting scams is a skill you can practice.</h1>
     <p className="lede">Scammers rely on surprise and speed. Family Drill gives your family safe surprises to practice on. This page covers what to look for and how to talk about it without anyone feeling silly.</p>
     <p className="actions"><PrintButton /><Link className="button" href="/docs/bot">Set up practice emails →</Link></p>
+    </div><Image src="/brand/hero-coaching.jpg" alt="A grandmother and her grown son smile at a laptop together" width={1600} height={900} /></div>
 
     <section className="fridge-card" aria-label="Printable scam check card">
       <div className="fridge-head"><b>Before you click, ask:</b><span>Family Drill · the 4-question check</span></div>

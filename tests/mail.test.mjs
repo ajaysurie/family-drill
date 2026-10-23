@@ -39,6 +39,7 @@ test("heads-up email is honest, branded, and comes from Family Drill", async () 
   assert.match(calls[0].text, /made up/);
   assert.match(calls[0].text, /Tell Alex/);
   assert.match(calls[0].html, /email-assets\/logo\/family-drill\.png/);
+  assert.match(calls[0].html, /src="http:\/\/localhost:3000\/brand\/hero-coaching\.jpg"[^>]*alt="[^"]+"/);
 });
 
 test("sender parsing accepts bare and named addresses", () => {

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { auth } from "../auth";
 import { BOT_INSTALL_URL } from "../lib/bot-install";
@@ -36,7 +37,12 @@ export default async function Home() {
         <p className="works-with"><span>Works with</span><b>Grok Bot</b><b>Meta Muse</b><b>any MCP assistant</b></p>
         <p className="organizer-note"><strong>Only the organizer sets it up.</strong> Add relatives by telling the bot their names and email addresses in the bot chat. There is no hosted website form for family members.</p>
       </div>
-      <div className="hero-art" aria-label="A practice email and the lesson that follows a click">
+      <div className="hero-art"><Image src="/brand/hero-coaching.jpg" alt="A grandmother and her grown son smile at a laptop together, practicing how to spot a suspicious message" width={1600} height={900} priority /></div>
+    </section>
+
+    <section className="drill-demo">
+      <div><span className="eyebrow">What a drill looks like</span><h2>It looks real. A click opens a lesson.</h2><p>The email arrives from an invented company with a real-looking logo and layout. If someone clicks, they land on a short page that shows their email again with each clue numbered, then the 4-question check for next time.</p><Link className="text-link" href="/examples/toll-unpaid">See this email and its lesson →</Link></div>
+      <div className="drill-demo-art" aria-label="A practice email and the lesson that follows a click">
         <div className="mock-email">
           <div className="mock-from"><b>{sample.fromName}</b><span>{sample.subject}</span></div>
           <img src={logoPath(sample.brandId)} alt={brands[sample.brandId].name} height={26} className="mock-logo" />
