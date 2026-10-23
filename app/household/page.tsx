@@ -6,7 +6,7 @@ import { auth } from "../../auth";
 import { redirect } from "next/navigation";
 
 const terms = [
-  "Surprise practice emails may be sent to household members.",
+  "The organizer may send surprise practice emails to household members.",
   "Every sender organization and situation is fictional.",
   "A drill will never ask for credentials, financial details, or other private information.",
   "After a miss, the family will review the clues without shame or punishment.",
@@ -19,13 +19,13 @@ export default async function HouseholdPage() {
   const members = await getMembers(session.user.id);
   const preferences = await getDrillPreferences(session.user.id);
   return <section><span className="eyebrow">Organizer tool</span><h1>Household setup</h1>
-    <div className="legacy-notice"><div><strong>Manage your household here when you need to.</strong><p>The Family Drill bot remains the primary path for adding family members and running drills; this page is an optional organizer tool.</p></div><Link className="button" href="/docs/bot">See bot setup →</Link></div>
+    <div className="legacy-notice"><div><strong>Manage your household here when you need to.</strong><p>Your assistant is the main way to add family members and send drills. This page is an optional organizer tool.</p></div><Link className="button" href="/docs/bot">See bot setup →</Link></div>
     <p>{household.organizerName} organizes this household's fictional surprise drills.</p>
     <article className="card"><h2>Plain-language terms</h2><ul>{terms.map((term) => <li key={term}>{term}</li>)}</ul>
-      {household.status === "active" ? <p className="notice">Agreement active since {new Date(household.activatedAt!).toLocaleDateString()} · terms {household.termsVersion}</p> : <form action={activateAgreement}><button className="secondary">I agree — activate household</button></form>}
+      {household.status === "active" ? <p className="notice">Agreement active since {new Date(household.activatedAt!).toLocaleDateString()} · terms {household.termsVersion}</p> : <form action={activateAgreement}><button className="secondary">Agree and activate household</button></form>}
     </article>
-    <form action={savePreferences} className="card preferences"><h2>Drill topics</h2><p>Choose the categories the bot may select for surprise sends.</p>{allCategories.map((category) => <label key={category}><input type="checkbox" name="category" value={category} defaultChecked={preferences.enabledCategories.includes(category)}/>{categoryLabels[category]}</label>)}<label><input type="checkbox" name="smsPreview" defaultChecked={preferences.smsPreview}/>Show optional SMS previews</label><button className="secondary">Save preferences</button></form>
-    {preferences.smsPreview && <article className="card sms-preview"><span className="eyebrow">PRACTICE SMS PREVIEW</span><h2>How a text lure looks</h2><div className="sms-bubble">{scenarios.find((item) => item.smsBody)?.smsBody} <u>family.example/p/example</u></div><small>Preview only — no SMS is sent.</small></article>}
+    <form action={savePreferences} className="card preferences"><h2>Drill topics</h2><p>Choose the topics your assistant may pick for surprise drills.</p>{allCategories.map((category) => <label key={category}><input type="checkbox" name="category" value={category} defaultChecked={preferences.enabledCategories.includes(category)}/>{categoryLabels[category]}</label>)}<label><input type="checkbox" name="smsPreview" defaultChecked={preferences.smsPreview}/>Show optional SMS previews</label><button className="secondary">Save preferences</button></form>
+    {preferences.smsPreview && <article className="card sms-preview"><span className="eyebrow">PRACTICE SMS PREVIEW</span><h2>How a text lure looks</h2><div className="sms-bubble">{scenarios.find((item) => item.smsBody)?.smsBody} <u>family.example/p/example</u></div><small>Preview only. Family Drill does not send texts.</small></article>}
     <h2 className="section-title">Household members</h2><div className="member-list">{members.map((member) => <article className="member" key={member.id}><b>{member.name}</b><span>{member.email}</span></article>)}</div>
     <form action={createMember} className="card add-member"><h2>Add family member</h2><label>Name<input name="name" required/></label><label>Email<input name="email" type="email" required/></label><button className="secondary">Add family member</button></form>
     <p><Link href="/admin">Continue to drill controls and reports →</Link></p>

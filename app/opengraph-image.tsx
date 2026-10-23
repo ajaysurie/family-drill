@@ -13,7 +13,7 @@ export default async function OpenGraphImage() {
     </div>
     <div style={{ display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -3, maxWidth: 1000 }}>Practice the scam before the real one hits.</div>
-      <div style={{ display: "flex", marginTop: 28, fontSize: 32, fontWeight: 500, color: "#657069" }}>Safe, surprise practice emails for your family. Run by your AI assistant.</div>
+      <div style={{ display: "flex", marginTop: 28, fontSize: 32, fontWeight: 500, color: "#657069" }}>Safe, surprise practice emails for your family, sent by your AI assistant.</div>
     </div>
     <div style={{ display: "flex", fontSize: 26, color: "#176b52", fontWeight: 800 }}>Works with Grok Bot · Meta Muse · any MCP assistant</div>
   </div>, { ...size, fonts: await googleFonts("Manrope", [500, 800]) });

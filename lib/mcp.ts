@@ -3,7 +3,7 @@ import { botTools, callBotTool } from "./bot-tools";
 
 // A stateless Streamable HTTP MCP server: JSON-RPC over POST, JSON responses, no SSE stream.
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
-export const MCP_INSTRUCTIONS = "Family Drill sends a household safe, fictional scam-practice emails so relatives learn to spot real scams. Call get_status first and follow its nextSteps. Only add people the organizer says agreed to practice. Never reveal upcoming drills to recipients. If anyone asks to stop, call pause_drills or remove_member right away. After a click, coach kindly with get_drill; celebrate reports with record_report. Full guide: /agent.md";
+export const MCP_INSTRUCTIONS = "Family Drill sends a household safe, fictional scam-practice emails so relatives learn to spot real scams. Call get_status first and follow its nextSteps. Only add people the organizer says agreed to practice. Never reveal upcoming drills to recipients. If anyone asks to stop, call pause_drills or remove_member right away. After a click, coach kindly with get_drill. Celebrate reports with record_report. The full guide is at /agent.md.";
 
 type JsonRpcMessage = { jsonrpc?: string; id?: string | number | null; method?: string; params?: Record<string, unknown> };
 const reply = (id: JsonRpcMessage["id"], result: unknown) => ({ jsonrpc: "2.0", id, result });

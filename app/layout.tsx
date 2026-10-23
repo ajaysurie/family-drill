@@ -6,7 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { appBaseUrl } from "../lib/email-assets";
 import "./styles.css";
 
-const description = "Your AI assistant sends your family safe, surprise scam-practice emails. Every company is invented, nothing is collected, and every click opens a short lesson.";
+const description = "Your AI assistant sends your family safe, surprise scam-practice emails. Every company is invented, Family Drill collects nothing, and a click opens a short lesson.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl()),

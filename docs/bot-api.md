@@ -1,14 +1,14 @@
 # Eggbot API contract
 
-This is the implementation-facing contract between an eggbot (or any assistant: Grok Bot, Meta Muse, an MCP client, or a script) and Family Drill. It describes the current routes under `app/api/bot/*` and `app/api/mcp/*`; it is not organizer setup documentation. The behavioral guide for assistants is served at `/agent.md`.
+This is the contract between an eggbot and Family Drill. An eggbot can be any assistant, such as Grok Bot, Meta Muse, an MCP client, or a script. It describes the current routes under `app/api/bot/*` and `app/api/mcp/*`. It is not organizer setup documentation. The app serves the behavior guide for assistants at `/agent.md`.
 
-## Three ways in, one set of rules
+## Ways to connect
 
-All three call the same registry in `lib/bot-tools.ts`, so validation, hints, and safety checks are identical.
+All three routes call the same registry in `lib/bot-tools.ts`, so they share validation, hints, and safety checks.
 
-1. **MCP (preferred).** `POST /api/mcp` with the bearer header, or `POST /api/mcp/<bot_token>` for clients that can only store a URL. Stateless Streamable HTTP: JSON-RPC 2.0 over POST, `application/json` responses, no SSE stream, no session header. Supports `initialize`, `ping`, `tools/list`, and `tools/call`. Notifications return `202`. `GET` returns `405`.
-2. **HTTPS tools.** `POST /api/bot/tools/<tool_name>` with a JSON object of arguments (an empty body is `{}`). `GET /api/bot/tools` lists every tool with its JSON schema. `/openapi.json` describes the same operations.
-3. **REST routes** below, kept for existing bots.
+1. **MCP.** Use `POST /api/mcp` with the bearer header, or `POST /api/mcp/<bot_token>` for clients that can only store a URL. The server is stateless Streamable HTTP. It takes JSON-RPC 2.0 over POST, answers with `application/json`, and uses no SSE stream or session header. It supports `initialize`, `ping`, `tools/list`, and `tools/call`. Notifications return `202`, and `GET` returns `405`.
+2. **HTTPS tools.** Send `POST /api/bot/tools/<tool_name>` with a JSON object of arguments. An empty body counts as `{}`. `GET /api/bot/tools` lists every tool with its JSON schema, and `/openapi.json` describes the same operations.
+3. **REST routes.** The routes below remain for existing bots.
 
 Tool names: `get_status`, `list_members`, `add_member`, `update_member`, `remove_member`, `get_preferences`, `update_preferences`, `list_scenarios`, `send_drill`, `list_drills`, `get_drill`, `record_report`, `get_family_report`, `list_events`, `pause_drills`, `resume_drills`. Errors return `{ "error": "<code>", "hint": "<what to do next>" }`.
 
@@ -56,7 +56,7 @@ Returns `{ "members": [...] }`. Each member contains `id`, `name`, and `email`, 
 
 #### `POST /api/bot/members`
 
-Adds a member. The JSON body requires non-empty string `name` and a valid `email`. Optional boolean `sendHeadsUp` sends the member a branded Family Drill email explaining the program and the 4-question scam check. The response is `{ "member": ..., "headsUpSent": boolean }` with status `201`. Invalid JSON or fields receive `400`; a duplicate email receives `409`; an inactive household agreement or paused install receives `403`.
+Adds a member. The JSON body requires a non-empty string `name` and a valid `email`. The optional boolean `sendHeadsUp` sends the member a branded Family Drill email that explains the program and the 4-question scam check. The response is `{ "member": ..., "headsUpSent": boolean }` with status `201`. Invalid JSON or fields receive `400`. A duplicate email receives `409`. An inactive household agreement, a paused install, or a full household of 12 members receives `403`.
 
 #### `PATCH /api/bot/members/:id`
 
@@ -80,15 +80,20 @@ Queues a drill using an optional JSON body:
 }
 ```
 
-All three fields are optional strings. Without `memberId`, the app picks the member with the fewest drills, skipping anyone drilled in the last 12 hours. The default `scenarioId` is `surprise`, which picks an enabled scenario the member has not seen, from a different category than their last drill. Without `sendAt`, the drill sends now. A `sendAt` in the past sends now; one more than 72 hours ahead is refused.
+All three fields are optional strings. Without `memberId`, the app picks the member with the fewest drills and skips anyone who got a drill in the last 12 hours. The default `scenarioId` is `surprise`, which picks an enabled scenario the member has not seen, from a different category than their last drill. Without `sendAt`, the drill sends now. A `sendAt` in the past also sends now. The app refuses a `sendAt` more than 72 hours ahead.
 
-Quiet hours use the household's `timeZone` preference (UTC until set): a time before 08:00 or at or after 21:00 local time moves to the next 08:00 local. Future times are handed to Resend's scheduler. The queue permits at most five drills created for a household in the trailing hour. Production sends through Resend when `MAIL_ADAPTER=resend`; other environments use the console adapter.
+Quiet hours use the household's `timeZone` preference, which is UTC until the assistant sets it. A time before 08:00 or at or after 21:00 local time moves to the next 08:00 local. The app hands future times to Resend's scheduler. A household can create at most five drills in any one-hour window. Production sends through Resend when `MAIL_ADAPTER=resend`. Other environments use the console adapter.
 
-A successful response has status `201` and contains `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `from`, `revealPath`, and `scheduledFor`. Errors: `400` for invalid input (`member_not_found`, `scenario_not_found`, `scenario_disabled`, `invalid_send_at`, `send_at_too_far`, `no_members`, `no_enabled_categories`); `403` for an inactive agreement or paused install; `429` for `rate_limited` or `everyone_recently_drilled`; `502` for `delivery_failed`, which also records a `drill.failed` event.
+A successful response has status `201` and contains `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `from`, `revealPath`, and `scheduledFor`. The errors are:
+
+- `400` for invalid input: `member_not_found`, `scenario_not_found`, `scenario_disabled`, `invalid_send_at`, `send_at_too_far`, `no_members`, or `no_enabled_categories`
+- `403` for an inactive agreement or paused install
+- `429` for `rate_limited` or `everyone_recently_drilled`
+- `502` for `delivery_failed`, which also records a `drill.failed` event
 
 #### `GET /api/bot/drills?memberId=<id>`
 
-Lists drills newest first. Each item has `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `fromName`, `category`, `sentAt`, `scheduledFor`, `outcome` (`scheduled`, `sent`, `clicked`, `entered-details`, `reported`, or `failed`), and the flags `clicked`, `confirmedByMember`, `enteredDetails`, and `reported`.
+Lists drills newest first. Each item has `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `fromName`, `category`, `sentAt`, `scheduledFor`, `outcome`, and the flags `clicked`, `confirmedByMember`, `enteredDetails`, and `reported`. The `outcome` is one of `scheduled`, `sent`, `clicked`, `entered-details`, `reported`, or `failed`.
 
 #### `POST /api/bot/drills/:id/report`
 
@@ -96,11 +101,11 @@ Records `drill.reported` when the organizer says the member spotted the drill an
 
 #### `GET /api/bot/drills/:id`
 
-Returns organizer-scoped coaching detail: everything in the drill list item plus `lessonBullets`, `clues`, a short `coachingScript`, `lureDeliberate`, and `lureEngagementMethod`. The method is `explicit_button` only after the member deliberately submits the reveal-page button; otherwise it is `null`. An unknown or other-household drill receives `404`.
+Returns coaching detail for one of the organizer's drills. It has everything in the drill list item plus `lessonBullets`, `clues`, a short `coachingScript`, `lureDeliberate`, and `lureEngagementMethod`. The method is `explicit_button` only after the member presses the confirmation button on the lesson page. Otherwise it is `null`. An unknown drill, or one from another household, receives `404`.
 
 ### Reports and scenarios
 
-- `GET /api/bot/status`: setup state and suggested `nextSteps` (same as `get_status`).
+- `GET /api/bot/status` returns the setup state and suggested `nextSteps`, the same as `get_status`.
 - `GET /api/bot/report`: per-member `drillsSent`, `clicked`, `enteredDetails`, `reported`, and `lastDrill`.
 - `GET /api/bot/scenarios`: every scenario with `id`, `category`, `topic`, `from`, `subject`, `tactic`, and `enabled`.
 
@@ -119,7 +124,7 @@ Returns an array of events ordered oldest first. Each item contains `cursor`, `t
 
 Pass the last event's `cursor` as `since` to request later events. If `since` is not a known event ID but parses as a date, it acts as an exclusive timestamp cutoff. An absent or unusable cursor returns all events. Events are scoped to the authenticated organizer.
 
-`drill.revealed` is recorded by a script on the lesson page (or practice sign-in page) after it loads in a browser. A bare GET, email open, preview, or link-scanner prefetch records nothing. Only the explicit button POST records `lure.engaged`, and only pressing **Sign in** on a practice sign-in page records `credentials.submitted` (no field values are sent). The unique database constraint allows each event type at most once per drill.
+A script on the lesson page or practice sign-in page records `drill.revealed` after the page loads in a browser. A bare GET, email open, preview, or link-scanner prefetch records nothing. Only the explicit button POST records `lure.engaged`. Only pressing **Sign in** on a practice sign-in page records `credentials.submitted`, and the browser sends no field values. A unique database constraint allows each event type at most once per drill.
 
 ### Pause and resume
 
@@ -129,7 +134,7 @@ Sets `householdPaused` to `true` and returns the install's public state.
 
 #### `POST /api/bot/resume`
 
-Sets `householdPaused` to `false` and returns the install's public state. Resume does not itself activate an agreement; the next authenticated write from an active, unpaused legacy install activates a draft agreement automatically.
+Sets `householdPaused` to `false` and returns the install's public state. Resume does not activate an agreement by itself. The next authenticated write from an active, unpaused legacy install activates a draft agreement.
 
 Pausing blocks roster writes and new drills. Read-only install, health, member, event, and drill-detail requests remain available. An inactive install token cannot authenticate at all.
 
@@ -139,10 +144,10 @@ Pausing blocks roster writes and new drills. Read-only install, health, member, 
 - A lure link must stay within Family Drill: it opens either the immediate reveal or an approved fictional portal that posts no field values and then reveals the lesson.
 - Never receive or store passwords, Social Security numbers, payment details, form answers, or other secrets.
 - Do not use tracking pixels, attachments, or downloads. A GET, email open, preview, or scanner prefetch must not count as engagement.
-- Record a click only from the lesson page's script, and a confirmed engagement only after a deliberate reveal confirmation or fictional-portal submit; never score a GET, preview, or field value.
+- Record a click only from the lesson page's script. Record a confirmed engagement only after the member presses the confirmation button or submits a fictional portal. Never score a GET, a preview, or a field value.
 - Keep email-provider credentials inside the app's server-side delivery integration. They do not belong in bot actions, instructions, templates, or conversations.
 - Operate only under an active household agreement. Any member can ask the organizer to pause the household.
 
 ### Drill preferences
 
-`GET /api/bot/preferences` returns `enabledCategories`, `smsPreview`, `timeZone`, and `organizerName`. `PATCH /api/bot/preferences` accepts any subset of those fields; `timeZone` must be an IANA name such as `America/Chicago`, and `organizerName` appears in heads-up emails and lesson pages; category values are `delivery`, `bank-payment`, `subscriptions`, `tech-support`, `school-kids`, and `account-lockout`. The bot should read these preferences when describing choices. The server always enforces them when selecting a surprise scenario (and rejects an explicitly disabled scenario), so a bot cannot accidentally bypass the household setting. SMS remains preview-only.
+`GET /api/bot/preferences` returns `enabledCategories`, `smsPreview`, `timeZone`, and `organizerName`. `PATCH /api/bot/preferences` accepts any subset of those fields. `timeZone` must be an IANA name such as `America/Chicago`. `organizerName` appears in heads-up emails and lesson pages. The category values are `delivery`, `bank-payment`, `subscriptions`, `tech-support`, `school-kids`, and `account-lockout`. The bot should read these preferences when it describes choices. The server enforces them when it picks a surprise scenario and rejects a request for a disabled one, so a bot cannot bypass the household setting. SMS stays preview-only.

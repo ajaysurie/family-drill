@@ -11,7 +11,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const household = await getHousehold(session.user.id); if (!household) redirect("/login");
   const report = await getFamilyReport(session.user.id);
   return <section><span className="eyebrow">Organizer tool</span><h1>Drill report</h1>
-    <div className="legacy-notice"><div><strong>Review and send drills here when you need to.</strong><p>The Family Drill bot remains the primary path for adding family members and running drills; this dashboard is an optional organizer tool.</p></div><Link className="button" href="/docs/bot">See bot setup →</Link></div>
+    <div className="legacy-notice"><div><strong>Review and send drills here when you need to.</strong><p>Your assistant is the main way to add family members and send drills. This dashboard is an optional organizer tool.</p></div><Link className="button" href="/docs/bot">See bot setup →</Link></div>
     <p>The household agreement is <b>{household.status}</b>. <Link href="/household">View the agreement and family members</Link>.</p>
     {status.sendError && <p className="notice" role="alert">{status.sendError}</p>}
     {status.sent === "1" && <p className="notice" role="status">Drill sent.</p>}

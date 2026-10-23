@@ -16,7 +16,7 @@ export function createResendVerificationEmailSender(client: ResendClient) {
       heading: "Sign in to Family Drill",
       paragraphs: ["Tap the button below to verify your email and continue setting up your family's scam practice."],
       button: { label: "Verify email and sign in", url },
-      footnote: "This link works once and expires in 24 hours. If you didn't ask to sign in, you can safely ignore this email.",
+      footnote: "This link works once and expires in 24 hours. If you didn't ask to sign in, you can ignore this email.",
     });
     const { error } = await client.emails.send({ from, to: identifier, subject: "Sign in to Family Drill", text, html });
 

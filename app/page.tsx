@@ -12,11 +12,11 @@ const featured = ["toll-unpaid", "parcel-redelivery", "photos-storage", "shared-
 const sample = scenarios.find((scenario) => scenario.id === "toll-unpaid")!;
 
 const faqs = [
-  ["Isn't this just phishing my own family?", "No. Everyone agrees to practice up front (your assistant can send each person a friendly heads-up), every company is invented, nothing is collected, and every click opens a lesson right away. It's a fire drill, not a fire."],
-  ["Will my relatives be upset?", "The heads-up email and the lesson page are written to be kind. Nobody is graded, and clicking is treated as a normal part of practice. Anyone can ask to stop, and your assistant removes them immediately."],
+  ["Isn't this just phishing my own family?", "No. Everyone agrees to practice first, and your assistant can send each person a heads-up email. Every company in the emails is invented, Family Drill collects nothing, and a click opens a lesson."],
+  ["Will my relatives be upset?", "Nobody gets a score. The heads-up email and the lesson page both say that clicking is a normal part of practice. Anyone can ask to stop, and your assistant removes them with one step."],
   ["What does my assistant need access to?", "Only your Family Drill install code. It never sees anyone's passwords or inbox, and it can only use the built-in practice emails. It can't send anything else."],
-  ["Which assistants work?", "Family Drill is built for Grok Bot and Meta Muse. Any assistant that supports MCP connectors, or can call an HTTPS API, works the same way."],
-  ["What if someone types a password on a practice page?", "Nothing is sent. The practice sign-in fields aren't even connected to the form, so values never leave their device. We only record that the button was pressed."],
+  ["Which assistants work?", "Grok Bot and Meta Muse both work. So does any assistant that supports MCP connectors or can call an HTTPS API."],
+  ["What if someone types a password on a practice page?", "Nothing leaves their device. The practice sign-in fields have no names, so the browser never sends what they type. Family Drill records only that someone pressed the button."],
   ["Can I run it myself?", "Yes. Family Drill is MIT licensed. Clone it, deploy it on your own domain, and connect your own email provider."],
 ] as const;
 
@@ -28,7 +28,7 @@ export default async function Home() {
       <div className="hero-copy">
         <span className="eyebrow">Scam practice for families</span>
         <h1>Teach your family to spot scams before a real one lands.</h1>
-        <p>Your AI assistant sends safe, surprise practice emails to the people you love. They look real, but every company is invented. One click opens a short lesson showing exactly what gave it away.</p>
+        <p>Your AI assistant sends safe, surprise practice emails to the people you love. They look real, but every company is invented. One click opens a short lesson that shows what gave it away.</p>
         <div className="actions">
           <Link className="button" href="/docs/bot">Get started <span aria-hidden>→</span></Link>
           <Link className="button secondary" href="/examples">See the practice emails</Link>
@@ -47,19 +47,19 @@ export default async function Home() {
         <div className="mock-lesson">
           <span className="eyebrow">After the click</span>
           <strong>Phew, that one was practice.</strong>
-          <ol><li>The name said Crestway, the address didn&apos;t.</li><li>Small fee, big threat.</li><li>The link went somewhere else.</li></ol>
+          <ol><li>The name said Crestway, the address didn&apos;t.</li><li>A small fee came with a big threat.</li><li>The link went somewhere else.</li></ol>
         </div>
       </div>
     </section>
 
     <section className="why">
-      <article><h3>Realistic</h3><p>Toll fines, parcel fees, locked accounts, shared files. The same tactics real scammers use this year, with polished logos and layouts.</p></article>
-      <article><h3>Safe</h3><p>Invented companies, no attachments, no tracking pixels, nothing collected. Practice sign-in pages never send what you type.</p></article>
-      <article><h3>Kind</h3><p>No scores to shame anyone. Clicks become two-minute chats, and spotting one becomes a win the family celebrates.</p></article>
+      <article><h3>Realistic</h3><p>Toll fines, parcel fees, locked accounts, and shared files. Each email copies a tactic scammers use now, with a logo and layout that look like a real company's.</p></article>
+      <article><h3>Safe</h3><p>Every company is invented. The emails have no attachments or tracking pixels, and Family Drill collects nothing. Practice sign-in pages never send what you type.</p></article>
+      <article><h3>Kind</h3><p>Nobody gets a score. A click leads to a two-minute talk, and spotting a drill counts as a win.</p></article>
     </section>
 
     <section id="how">
-      <span className="eyebrow">How it works</span><h2>About five minutes to set up. Then it runs itself.</h2>
+      <span className="eyebrow">How it works</span><h2>Setup takes about five minutes. After that, your assistant sends the drills.</h2>
       <OnboardingSteps />
     </section>
 
@@ -69,24 +69,24 @@ export default async function Home() {
         <img src={heroPath(scenario.id)} alt="" width={600} height={225} loading="lazy" />
         <div><strong>{scenario.fromName}</strong><h3>{scenario.subject}</h3><p>{scenario.lesson[0]}</p></div>
       </Link>)}</div>
-      <p className="example-note">These are fictional organizations, not real brands. Email copy can mimic a request for personal information, but the link always opens an instant lesson. Family Drill never collects passwords, Social Security numbers, or card details. <Link href="/examples">See all practice emails →</Link></p>
+      <p className="example-note">The organizations are fictional, not real brands. An email may ask for personal information the way a scam would, but its link always opens a lesson. Family Drill never collects passwords, Social Security numbers, or card details. <Link href="/examples">See all practice emails →</Link></p>
     </section>
 
     <section className="teach-strip">
-      <div><span className="eyebrow">Practice is half of it</span><h2>Talking is the other half.</h2><p>A printable 4-question check, the six tricks behind almost every scam, a family code word for voice-clone calls, and how to bring it up with parents, grandparents, and kids without a lecture.</p><Link className="button" href="/learn">Teach your family →</Link></div>
+      <div><span className="eyebrow">Teach your family</span><h2>Practice works best with a conversation.</h2><p>The teaching page has a printable 4-question check, the six tricks scammers use most, a family code word for voice-clone calls, and ways to bring it up with parents, grandparents, and kids without a lecture.</p><Link className="button" href="/learn">Teach your family →</Link></div>
       <ol className="mini-check"><li>Was I expecting this?</li><li>Who really sent it?</li><li>Is it rushing me?</li><li>Can I check another way?</li></ol>
     </section>
 
     <section>
       <span className="eyebrow">Choose where it runs</span><h2>Hosted, or yours to run.</h2>
       <div className="run-grid">
-        <article className="run-card featured"><span className="tag">Simplest</span><h3>Hosted on app.familydrill.com</h3><p>Sign in, connect your assistant, done. No servers or email setup.</p><Link href="/docs/bot">Connect your assistant <span aria-hidden>→</span></Link></article>
+        <article className="run-card featured"><span className="tag">Simplest</span><h3>Hosted on app.familydrill.com</h3><p>Sign in and connect your assistant. You don't run servers or set up email.</p><Link href="/docs/bot">Connect your assistant <span aria-hidden>→</span></Link></article>
         <article className="run-card"><span className="tag">MIT licensed</span><h3>Clone and self-host</h3><p>Run the app on your own domain and connect your own email service provider.</p><a href="https://github.com/ajaysurie/family-drill">Clone on GitHub <span aria-hidden>↗</span></a></article>
       </div>
     </section>
 
     <section className="faq">
-      <span className="eyebrow">Questions</span><h2>Good questions to ask first.</h2>
+      <span className="eyebrow">Questions</span><h2>What people ask first.</h2>
       {faqs.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}
       <p><Link href="/docs/safety">Read the full safety rules →</Link></p>
     </section>

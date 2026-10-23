@@ -5,7 +5,7 @@ import { scamChecks } from "../lib/family-drill-email";
 import type { Clue, Scenario } from "../lib/types";
 
 export const realClickSteps = [
-  ["Don't panic, and don't feel ashamed.", "Scams are built by professionals to fool smart people."],
+  ["Don't panic, and don't feel ashamed.", "Professionals write scams to fool smart people."],
   ["If you typed a password,", "change it right away on the real site or app, and anywhere else you use it."],
   ["If you shared card or bank details,", "call the number on the back of your card and ask them to block it."],
   ["If you let someone connect to your computer,", "disconnect from the internet and get help from someone you trust."],
@@ -16,7 +16,7 @@ export function lessonClues(scenario: Scenario, sender: string, linkHost: string
   return [
     { label: "The name and the address didn't match", detail: `It said "${scenario.fromName}", but the email came from ${sender}. Check the address, not just the name.` },
     ...scenario.clues,
-    { label: "The link went somewhere else", detail: `The button led to ${linkHost}, not ${brands[scenario.brandId].name}. Before you tap, press and hold the link (or hover with a mouse) to see where it really goes.` },
+    { label: "The link went somewhere else", detail: `The button led to ${linkHost}, not ${brands[scenario.brandId].name}. Before you tap, press and hold the link, or hover over it with a mouse, to see where it goes.` },
   ];
 }
 

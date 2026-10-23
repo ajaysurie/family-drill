@@ -1,67 +1,70 @@
 # Family Drill
 
-Family Drill is an open-source web app for **household-agreed surprise email drills**, run from an AI assistant such as Grok Bot or Meta Muse. A family accepts one plain-language agreement. The organizer's assistant then sends household members unexpected, fictional messages. Opening a drill link shows a lesson that points out the exact clues in that email.
+Family Drill is an open-source web app that sends a household safe, surprise scam-practice emails. An organizer runs it from an AI assistant such as Grok Bot or Meta Muse. The family accepts one plain-language agreement, and the organizer's assistant then sends household members fictional messages at unexpected times. Opening a drill link shows a lesson that points out the clues in that email.
 
-Email artwork (each fictional brand's logo and each scenario's hero illustration) is rendered to PNG at build time by `app/email-assets/[kind]/[file]/route.tsx` and served from `/email-assets/...`. Every recipient loads the same static URL with no query string, so an image load cannot identify who opened a message. Images carry alt text and colored backgrounds so a message still reads well when a mail client blocks images. No binary assets are stored in git.
-
-This is practice under a prior household agreement. It is not covert phishing, surveillance, or brand impersonation. The app does not imitate real brands, relatives, banks, or government agencies. It does not request credentials or financial details, use tracking pixels, include attachments, or redirect to an external drill page. Reports count only an explicit button POST. A raw GET, email open, preview, or scanner prefetch does not count.
+This is practice under a household agreement. It is not covert phishing, surveillance, or brand impersonation. The app never imitates real brands, relatives, banks, or government agencies. It never asks for credentials or financial details, and it sends no tracking pixels, attachments, or links to outside sites.
 
 ## Household agreement model
 
-1. The household agrees that surprise practice emails may be sent.
+1. The household agrees that the organizer may send surprise practice emails.
 2. Drills use fictional organizations only and never ask for credentials.
-3. An organizer can send a drill only while the household agreement is active; there is no per-drill or per-member invite gate.
-4. The reveal appears as soon as the unique link loads, but loading it does not score an engagement.
-5. The member explicitly chooses **I opened this from the email** before a lure engagement is recorded.
+3. An organizer can send a drill only while the household agreement is active. No per-drill or per-member invite step exists.
+4. The lesson appears as soon as the drill link opens in a browser.
+5. A member can press **I clicked the link in the email** to confirm a click.
 6. The family reviews the clues after a miss. Any member can ask the organizer to stop.
 
-Organizer identities, agreements, members, attempts, and explicit drill events are persisted in Vercel Postgres (Neon) through Drizzle. Relatives never create accounts: their unguessable drill-token links remain public.
+Family Drill keeps organizers, agreements, members, drills, and drill events in Vercel Postgres, which is Neon, through Drizzle. Relatives never create accounts. Their drill links hold random tokens.
 
 ## Quickstart
 
-Requires Node.js 20.9 or newer.
+You need Node.js 20.9 or newer.
 
 ```bash
 cp .env.example .env.local
 npm install
-# The app applies db/migrations/0001_foundation.sql automatically on first query.
-# For an existing database, 0003_time_zone_and_reports.sql adds the newest columns.
-# Optionally apply db/seed.sql for local demo data.
 npm test
 npm run dev
 ```
 
-Create a Vercel Postgres/Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the canonical app origin. The hosted values are `https://app.familydrill.com`; replace both with your own origin when self-hosting. Sign in at `/login` with an organizer email. In development without a Resend key, copy the `[auth:magic-link]` URL from the server console.
+The app applies `db/migrations/0001_foundation.sql` on its first query. An existing database also picks up the columns in `0003_time_zone_and_reports.sql` that way. Apply `db/seed.sql` yourself if you want local demo data.
 
-For production metrics, enable Web Analytics and Speed Insights in the Vercel project if they are not already enabled. Their packages send no data during local development.
+Create a Vercel Postgres or Neon database and put its pooled connection string in `DATABASE_URL`. Set a long random `AUTH_SECRET`, then set `AUTH_URL` and `APP_URL` to the app's origin. The hosted values are `https://app.familydrill.com`. Replace both with your own origin when you self-host. Sign in at `/login` with an organizer email. In development without a Resend key, copy the `[auth:magic-link]` URL from the server console.
 
-Open [http://localhost:3000](http://localhost:3000), then try these self-hosted development and evaluation routes (they are intentionally not linked from the public site navigation):
+For production metrics, turn on Web Analytics and Speed Insights in the Vercel project. Their packages send no data during local development.
 
-- `/household`: organizer-only agreement status, plain-language terms, member list, and add-member form
-- `/admin`: organizer-only surprise-drill controls and sent-versus-deliberate-engagement reports
-- `/d/drill-leo`: seeded immediate reveal. A bare GET does not record anything; the page's script records a click.
-- `/examples`: every practice email rendered exactly as sent, with its lesson
-- `/learn`: the family teaching page (4-question check, conversation tips, printable card)
+Open [http://localhost:3000](http://localhost:3000). The public site links to none of these development routes:
 
-The home page, `/docs/*`, and `/d/[token]` are public. Auth.js gates `/household` and `/admin`; their server actions also require the organizer session, and database queries scope records to that organizer.
+- `/household` shows the agreement, the terms, the member list, and an add-member form to the signed-in organizer.
+- `/admin` lets the signed-in organizer send drills and see each member's sent, clicked, and reported counts.
+- `/d/drill-leo` is a seeded lesson page. A plain GET records nothing. The page's script records a click.
+- `/examples` renders every practice email as sent, next to its lesson.
+- `/learn` is the family teaching page, with the 4-question check, conversation tips, and a printable card.
 
-Drills respect quiet hours (21:00 to 08:00) in the household's time zone, which the assistant sets with `update_preferences`. A future `sendAt` (up to 72 hours ahead) is handed to Resend's scheduler. Surprise picks go to the member with the fewest drills who has not had one in 12 hours, using a lure they have not seen from a different category than their last one.
+The home page, `/docs/*`, `/examples`, `/learn`, and `/d/[token]` are public. Auth.js gates `/household`, `/admin`, and `/install`. Their server actions also check the organizer session, and every database query scopes records to that organizer.
 
-`Send surprise drill` writes a local `[mail:stub]` line and unique URL to the development server console by default. For production drill delivery, set `MAIL_ADAPTER=resend`, `RESEND_API_KEY` to a Resend API key, and `EMAIL_FROM` to a sender on a verified domain. The same Resend key sends organizer magic links in production. Set `EMAIL_FROM_AUTH` to use a different verified sender for sign-in mail; otherwise it falls back to `EMAIL_FROM`. Production sign-in fails loudly if `RESEND_API_KEY` is absent, while local development logs the magic link when no key is configured. Drills keep the verified sending address and borrow only the fictional display name (for example `SwiftBox Delivery <drills@familydrill.com>`), so "check the real address" is always a catchable clue. Each drill carries an `X-Family-Drill: household-practice-drill` header. Adding a member with `sendHeadsUp` sends a branded, honest heads-up email from `EMAIL_FROM`.
+## Sending drills
+
+Drills skip quiet hours, 21:00 to 08:00 in the household's time zone. The assistant sets the time zone with `update_preferences`. A `sendAt` up to 72 hours ahead goes to Resend's scheduler. A surprise drill goes to the member with the fewest drills who has not had one in the last 12 hours. It uses a lure that member has not seen, from a different category than their last one.
+
+By default, sending a drill writes a `[mail:stub]` line and the drill URL to the development server console. For production delivery, set `MAIL_ADAPTER=resend`, set `RESEND_API_KEY`, and set `EMAIL_FROM` to a sender on a verified domain. The same key sends organizer sign-in links. Set `EMAIL_FROM_AUTH` to send sign-in mail from a different verified address. Without it, sign-in mail uses `EMAIL_FROM`. In production, sign-in fails with an error if `RESEND_API_KEY` is missing. In development, the server logs the link instead.
+
+A drill keeps the verified sending address and borrows only the fictional display name, for example `SwiftBox Delivery <drills@familydrill.com>`. That way "check the real address" is always a clue a relative can catch. Each drill carries an `X-Family-Drill: household-practice-drill` header. Adding a member with `sendHeadsUp` sends them a branded heads-up email from `EMAIL_FROM`.
+
+The route `app/email-assets/[kind]/[file]/route.tsx` renders each fictional brand's logo and each scenario's illustration to PNG at build time. Every recipient loads the same URL with no query string, so loading an image can't reveal who opened a message. Each image has alt text and sits on a colored background, so the email still reads well when a mail client blocks images. The repository stores no image binaries for email.
 
 ## Assistants: Grok Bot, Meta Muse, and MCP
 
-Organizers sign in at `/login` and land on `/install`, which shows their install code and step-by-step setup for Grok Bot, Meta Muse, and other assistants. Revisiting `/install` keeps the same code; **Replace code** rotates it.
+Organizers sign in at `/login` and land on `/install`. That page shows their install code and setup steps for Grok Bot, Meta Muse, and other assistants. Visiting `/install` again keeps the same code. The **Replace code** button makes a new one.
 
-Every assistant uses the same tool registry (`lib/bot-tools.ts`) through one of three doors:
+Every assistant reaches the same tool registry in `lib/bot-tools.ts` through one of three routes:
 
-- **Remote MCP server**: `POST /api/mcp` with `Authorization: Bearer <install code>`, or `POST /api/mcp/<install code>` for assistants that only store a URL. Stateless Streamable HTTP with JSON responses.
-- **HTTPS tools**: `POST /api/bot/tools/<tool_name>` with a JSON body. `GET /api/bot/tools` lists tools with JSON schemas, and `/openapi.json` describes them.
-- **The original REST routes** in the [eggbot API contract](docs/bot-api.md).
+- `POST /api/mcp` is a stateless Streamable HTTP MCP server that takes `Authorization: Bearer <install code>`. Assistants that can only store a URL use `POST /api/mcp/<install code>`.
+- `POST /api/bot/tools/<tool_name>` runs any tool with a JSON body. `GET /api/bot/tools` lists the tools with their JSON schemas, and `/openapi.json` describes them.
+- The original REST routes are in the [eggbot API contract](docs/bot-api.md).
 
-`/agent.md` is the assistant guide: setup conversation, cadence, coaching, and hard safety rules. Paste it into a Grok Bot's skills when publishing a bot template (never include an install code in a template), or let an assistant read it from the setup message. `/llms.txt` points crawlers and agents at all of it.
+`/agent.md` is the assistant guide. It covers the setup conversation, how often to send drills, coaching, and the safety rules. When you publish a Grok Bot template, paste the guide into the bot's skills and leave any install code out. Other assistants read it from the setup message. `/llms.txt` lists all of these for agents and crawlers.
 
-Check a live connection without changing anything:
+To check a live connection without changing anything, run:
 
 ```bash
 npm run smoke:bot -- https://app.familydrill.com <install-code>
@@ -69,7 +72,24 @@ npm run smoke:bot -- https://app.familydrill.com <install-code>
 
 ## Privacy model
 
-The database stores the organizer email identity, household agreement, relative names and email addresses, attempts, and deliberate engagement events. Auth.js stores expiring verification tokens and organizer sessions. Relative links use random tokens and need no relative account. A GET only reveals the lesson. A click is recorded only after the lesson page's script runs in a browser, which link scanners and previews do not do, and a confirmed click only after the member presses the button. Drills collect no credentials, payment details, open pixels, attachments, or form answers.
+The database stores the organizer's email, name, and time zone, the household agreement, each member's name and email address, and the drills and their events. Auth.js stores expiring sign-in tokens and organizer sessions. Relatives need no account.
+
+A GET of a drill link records nothing. The lesson page's script records a click after the page loads in a browser, which link scanners and email previews don't do. Only the confirmation button records a confirmed click. Drills collect no credentials, payment details, or form answers.
+
+## Lure variety and safety
+
+The scenario pack covers six categories that organizers can turn on or off:
+
+- package and delivery
+- bank, payment, and toll alerts
+- subscriptions and cloud storage
+- tech support and virus notices
+- school and kids accounts
+- account lockouts and shared files
+
+Organizers turn categories off through their assistant or the household page, and surprise drills use only the categories left on. The optional SMS bubble is a preview and sends no texts.
+
+Every lure identity is fictional: SwiftBox, Riverline Bank, Streamly, SoftShield, Maple District Portal, PayNest, Crestway Tolls, Cloudnook Photos, and Sharefold. Each scenario lists the `clues` its lesson page explains. This project drew the colors and marks itself. Do not replace them with real trademarks, lookalike domains, or trade dress. Scenarios with `portalStage` open a practice sign-in page first. Its inputs have no `name`, so typed values never leave the browser. The page records only that someone pressed the button.
 
 ## Development checks
 
@@ -78,14 +98,8 @@ npm test
 npm run build
 ```
 
-The scenario tests reject credential-like prompts, forms, attachments, and downloads. Keep all scenarios fictional and educational.
+The tests reject real brand names, practice wording inside a lure, missing clues, and forms or scripts in a rendered email. Keep every scenario fictional and educational.
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-## Lure variety and safety
-
-The scenario pack covers six organizer-selectable categories: package and delivery; bank, payment, and toll alerts; subscriptions and cloud storage; tech support and virus notices; school and kids accounts; and account lockouts and shared files. Organizers can disable any category through their assistant or the household page; surprise selection uses only enabled categories. An optional SMS bubble is a preview only and does not send texts.
-
-All lure identities are fictional: SwiftBox, Riverline Bank, Streamly, SoftShield, Maple District Portal, PayNest, Crestway Tolls, Cloudnook Photos, and Sharefold. Each scenario lists the specific `clues` its lesson page explains. Their colors and geometric marks were created for this project. Do not replace them with real trademarks, lookalike domains, or trade dress. The practice sign-in page (for `portalStage` scenarios) has inputs with no `name`, so field values never leave the browser; it stores only that the button was pressed.

@@ -35,15 +35,15 @@ export function headsUpEmail(memberName: string, organizer: string, appUrl = app
     subject: `${organizer} added you to Family Drill scam practice`,
     ...renderFamilyDrillEmail({
       preheader: "Safe practice emails are coming. Here's what to expect.",
-      heading: `Hi ${memberName}, you're on the team.`,
+      heading: `Hi ${memberName}, practice emails are coming.`,
       paragraphs: [
         `${organizer} is using Family Drill to help your family get better at spotting scam emails.`,
         "Sometime in the next few weeks you may get a practice email that looks like it's from a company. Every company in these emails is made up, and the emails are safe. If you click one, you'll see a short page with tips. Nothing bad happens, and no one is in trouble.",
-        `The best move is the same as with a real scam: if something feels off, don't click. Tell ${organizer} instead. That counts as a win.`,
+        `Treat it like a real scam. If something feels off, don't click, and tell ${organizer} instead. That counts as a win.`,
       ],
       list: { title: "The 4-question check", items: scamChecks },
       button: { label: "Learn the warning signs", url: `${appUrl}/learn` },
-      footnote: `You're getting this because ${organizer} added your address to their household's practice list. Want to stop? Just tell ${organizer}.`,
+      footnote: `You're getting this because ${organizer} added your address to their household's practice list. Want to stop? Tell ${organizer}.`,
     }, appUrl),
   };
 }

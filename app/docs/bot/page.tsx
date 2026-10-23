@@ -31,9 +31,9 @@ export default function BotDocsPage() {
       <li>&quot;Pause everything until after the holidays.&quot;</li>
     </ul>
 
-    <h2>Practice, not phishing</h2>
+    <h2>Safety</h2>
     <p>Every drill uses a fictional organization, never a real brand or sender identity. A click opens a lesson that never asks for or keeps credentials, financial details, or other secrets. Your assistant follows the same <Link href="/docs/safety">safety rules</Link>.</p>
 
-    <p className="help">Bot builders: see the <a href="/agent.md">assistant guide</a>, the <a href="/openapi.json">OpenAPI spec</a>, and <a href="https://github.com/ajaysurie/family-drill/blob/main/docs/bot-api.md">docs/bot-api.md in the repository</a>.</p>
+    <p className="help">Bot builders can read the <a href="/agent.md">assistant guide</a>, the <a href="/openapi.json">OpenAPI spec</a>, and <a href="https://github.com/ajaysurie/family-drill/blob/main/docs/bot-api.md">docs/bot-api.md in the repository</a>.</p>
   </>;
 }
