@@ -6,9 +6,9 @@ import { Resend } from "resend";
 
 export type DrillMessage = { member: Member; scenario: Scenario; attempt: Attempt };
 export type HeadsUpMessage = { member: Member; organizer: string };
-export interface MailAdapter { sendDrill(message: DrillMessage): Promise<void>; sendHeadsUp(message: HeadsUpMessage): Promise<void> }
+export interface MailAdapter { sendDrill(message: DrillMessage): Promise<string | undefined>; cancelDrill(messageId: string): Promise<void>; sendHeadsUp(message: HeadsUpMessage): Promise<void> }
 
-type ResendClient = Pick<Resend, "emails">;
+type ResendClient = { emails: Pick<Resend["emails"], "send" | "cancel"> };
 
 // Drills keep the verified sending address and borrow only the invented display name, so
 // "check the real address" is always a clue the family can catch.
@@ -20,13 +20,18 @@ const scheduledAt = (attempt: Attempt) => attempt.scheduledFor && Date.parse(att
 
 export function createResendMailAdapter(client: ResendClient, from: string): MailAdapter {
   const send = async (payload: Parameters<ResendClient["emails"]["send"]>[0], kind: string) => {
-    const { error } = await client.emails.send(payload);
+    const { data, error } = await client.emails.send(payload);
     if (error) throw new Error(`Resend failed to send ${kind} email: ${error.message}`);
+    return data?.id;
   };
   return {
     async sendDrill(message) {
       const email = renderDrill(message), when = scheduledAt(message.attempt);
-      await send({ from: `${email.fromName} <${senderAddress(from)}>`, to: email.to, subject: email.subject, text: email.text, html: email.html, headers: { "X-Family-Drill": "household-practice-drill" }, ...(when && { scheduledAt: when }) }, "drill");
+      return send({ from: `${email.fromName} <${senderAddress(from)}>`, to: email.to, subject: email.subject, text: email.text, html: email.html, headers: { "X-Family-Drill": "household-practice-drill" }, ...(when && { scheduledAt: when }) }, "drill");
+    },
+    async cancelDrill(messageId) {
+      const { error } = await client.emails.cancel(messageId);
+      if (error) throw new Error(`Resend failed to cancel drill email: ${error.message}`);
     },
     async sendHeadsUp({ member, organizer }) {
       const email = headsUpEmail(member.name, organizer);
@@ -39,6 +44,10 @@ export const consoleMailAdapter: MailAdapter = {
   async sendDrill(message) {
     const email = renderDrill(message);
     console.log(`[mail:stub]\nFrom: ${email.fromName} <${drillSender()}>\nTo: ${email.to}\nSubject: ${email.subject}\nScheduled: ${scheduledAt(message.attempt) ?? "now"}\n\n${email.text}\n\n[HTML: ${Buffer.byteLength(email.html)} bytes]`);
+    return `stub-${message.attempt.id}`;
+  },
+  async cancelDrill(messageId) {
+    console.log(`[mail:stub] cancelled ${messageId}`);
   },
   async sendHeadsUp({ member, organizer }) {
     const email = headsUpEmail(member.name, organizer);

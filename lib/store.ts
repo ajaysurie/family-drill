@@ -56,7 +56,7 @@ export async function createBotDrill(organizerId: string, memberId?: string, sce
   const householdMembers = await getMembers(organizerId);
   if (!householdMembers.length) return { error: "no_members" };
   const due = householdMembers.filter((item) => item.receivingDrills && !history.some((drill) => drill.memberId === item.id && drill.createdAt.valueOf() > Date.now() - 12 * 3_600_000));
-  if (!householdMembers.some((item) => item.receivingDrills)) return { error: "no_members" };
+  if (!memberId && !householdMembers.some((item) => item.receivingDrills)) return { error: "no_members" };
   if (!memberId && !due.length) return { error: "everyone_recently_drilled" };
   const member = memberId ? householdMembers.find((item) => item.id === memberId) : pickMember(due, history);
   if (!member) return { error: "member_not_found" };
@@ -73,7 +73,8 @@ export async function createBotDrill(organizerId: string, memberId?: string, sce
   const [created] = await db.insert(attempts).values({ memberId: member.id, scenarioId: scenario.id, scheduledFor: sendTime.at }).returning();
   const result = attempt(created);
   try {
-    await getMailAdapter().sendDrill({ attempt: result, member, scenario });
+    const providerMessageId = await getMailAdapter().sendDrill({ attempt: result, member, scenario });
+    if (providerMessageId) await db.update(attempts).set({ providerMessageId }).where(eq(attempts.id, result.id));
   } catch (error) {
     console.error(`[family-drill] delivery failed for drill ${result.id}`, error);
     await addEvent(result, "drill.failed", `The ${scenario.fromName} drill to ${member.name} could not be delivered.`);
@@ -88,22 +89,36 @@ export async function recordReveal(token: string) { await ensureSchema(); const 
 export async function recordLureOpened(token: string) { await ensureSchema(); const found = await findAttempt(token); if (found) await addEvent(found, "lure.engaged", "The member deliberately confirmed opening the practice lure."); return found; }
 export async function recordCredentialSubmit(token: string) { await ensureSchema(); const found = await findAttempt(token); if (found) { await addEvent(found, "lure.engaged", "The member opened the fictional portal."); await addEvent(found, "credentials.submitted", "The member submitted the portal form; no field values were received or stored."); } return found; }
 export async function getBotEvents(organizerId: string, since?: string) { await ensureSchema(); const rows = await db.select({ event: drillEvents, attempt: attempts, memberName: members.name }).from(drillEvents).innerJoin(attempts, eq(drillEvents.attemptId, attempts.id)).innerJoin(members, eq(attempts.memberId, members.id)).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).orderBy(asc(drillEvents.occurredAt)); const index = since ? rows.findIndex(({ event }) => event.id === since) : -1; const cutoff = since && index < 0 ? Date.parse(since) : NaN; return rows.filter(({ event }, eventIndex) => eventIndex > index && (Number.isNaN(cutoff) || event.occurredAt.valueOf() > cutoff)).map(({ event, attempt: found, memberName }) => ({ cursor: event.id, type: event.type, at: event.occurredAt.toISOString(), drillId: found.id, memberName, summary: event.summary })); }
-export type DrillSummary = DrillStatus & { drillId: string; memberId: string; memberName: string; scenarioId: string; scenarioLabel: string; fromName: string; category: ScenarioCategory; sentAt: string; scheduledFor?: string };
+export type DrillSummary = DrillStatus & { drillId: string; memberId: string; memberName: string; scenarioId: string; scenarioLabel: string; fromName: string; category: ScenarioCategory; createdAt: string; scheduledFor?: string };
 export async function listDrills(organizerId: string, memberId?: string): Promise<DrillSummary[]> {
   await ensureSchema();
   const rows = await db.select({ attempt: attempts, memberName: members.name }).from(attempts).innerJoin(members, eq(attempts.memberId, members.id)).innerJoin(householdAgreements, and(eq(members.householdId, householdAgreements.id), eq(householdAgreements.organizerId, organizerId))).where(memberId ? eq(attempts.memberId, memberId) : undefined).orderBy(desc(attempts.createdAt));
   const events = rows.length ? await db.select({ attemptId: drillEvents.attemptId, type: drillEvents.type }).from(drillEvents).where(inArray(drillEvents.attemptId, rows.map(({ attempt: row }) => row.id))) : [];
   return rows.map(({ attempt: row, memberName }) => {
     const scenario = scenarios.find((item) => item.id === row.scenarioId);
-    return { drillId: row.id, memberId: row.memberId, memberName, scenarioId: row.scenarioId, scenarioLabel: scenario?.subject ?? row.scenarioId, fromName: scenario?.fromName ?? "", category: scenario?.category ?? "delivery", sentAt: row.createdAt.toISOString(), scheduledFor: row.scheduledFor?.toISOString(), ...drillStatus(events.filter((event) => event.attemptId === row.id).map((event) => event.type), row.scheduledFor ?? undefined) };
+    return { drillId: row.id, memberId: row.memberId, memberName, scenarioId: row.scenarioId, scenarioLabel: scenario?.subject ?? row.scenarioId, fromName: scenario?.fromName ?? "", category: scenario?.category ?? "delivery", createdAt: row.createdAt.toISOString(), scheduledFor: row.scheduledFor?.toISOString(), ...drillStatus(events.filter((event) => event.attemptId === row.id).map((event) => event.type), row.scheduledFor ?? undefined) };
   });
 }
 export async function getFamilyReport(organizerId: string) {
   const [householdMembers, drills] = await Promise.all([getMembers(organizerId), listDrills(organizerId)]);
   return householdMembers.map((member) => {
-    const own = drills.filter((drill) => drill.memberId === member.id && drill.outcome !== "failed" && drill.outcome !== "scheduled");
+    const mine = drills.filter((drill) => drill.memberId === member.id);
+    const own = mine.filter((drill) => !["failed", "scheduled", "cancelled"].includes(drill.outcome));
     const count = (test: (drill: DrillSummary) => boolean) => own.filter(test).length;
-    return { memberId: member.id, name: member.name, drillsSent: own.length, clicked: count((drill) => drill.clicked), enteredDetails: count((drill) => drill.enteredDetails), reported: count((drill) => drill.reported), lastDrill: own[0] ? { drillId: own[0].drillId, scenarioLabel: own[0].scenarioLabel, outcome: own[0].outcome, sentAt: own[0].sentAt } : null };
+    return { memberId: member.id, name: member.name, receivingDrills: member.receivingDrills, scheduled: mine.filter((drill) => drill.outcome === "scheduled").length, drillsSent: own.length, clicked: count((drill) => drill.clicked), enteredDetails: count((drill) => drill.enteredDetails), reported: count((drill) => drill.reported), lastDrill: own[0] ? { drillId: own[0].drillId, scenarioLabel: own[0].scenarioLabel, outcome: own[0].outcome, createdAt: own[0].createdAt } : null };
   });
+}
+// Scheduled drills sit in the email provider's queue until their send time, so stopping
+// someone has to pull those out too.
+export async function cancelScheduledDrills(organizerId: string, scope: { memberId?: string; drillId?: string }) {
+  const pending = (await listDrills(organizerId, scope.memberId)).filter((drill) => drill.outcome === "scheduled" && (!scope.drillId || drill.drillId === scope.drillId));
+  const cancelled: string[] = [];
+  for (const drill of pending) {
+    const [row] = await db.select().from(attempts).where(eq(attempts.id, drill.drillId));
+    if (row.providerMessageId) await getMailAdapter().cancelDrill(row.providerMessageId);
+    await addEvent(attempt(row), "drill.cancelled", `The scheduled ${drill.fromName} drill to ${drill.memberName} was cancelled.`);
+    cancelled.push(drill.drillId);
+  }
+  return cancelled;
 }
 export async function recordReport(organizerId: string, drillId: string) { const found = await findAttemptById(organizerId, drillId); if (found) await addEvent(found, "drill.reported", "The member spotted the drill and reported it to the organizer."); return found; }

@@ -17,6 +17,7 @@ test("only recorded events change a drill's outcome", () => {
   assert.equal(drillStatus(["drill.sent", "drill.reported"], past).outcome, "reported");
   assert.deepEqual(drillStatus(["drill.sent", "drill.revealed", "drill.reported"], past), { outcome: "clicked", clicked: true, confirmedByMember: false, enteredDetails: false, reported: true });
   assert.equal(drillStatus(["drill.failed"], past).outcome, "failed");
+  assert.equal(drillStatus(["drill.sent", "drill.cancelled"], future).outcome, "cancelled");
 });
 
 test("bot drill detail reports deliberate engagement only from the explicit button event", async () => {

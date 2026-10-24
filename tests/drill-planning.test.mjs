@@ -22,6 +22,8 @@ test("send times in the past send now, and far-future or invalid times are refus
   assert.equal(at("2026-10-01T12:00:00Z", "UTC"), now.toISOString());
   assert.deepEqual(nextAllowedTime("2026-10-30T12:00:00Z", "UTC", now), { error: "send_at_too_far" });
   assert.deepEqual(nextAllowedTime("next tuesday", "UTC", now), { error: "invalid_send_at" });
+  assert.deepEqual(nextAllowedTime("2026-10-22T18:00:00", "UTC", now), { error: "invalid_send_at" }, "a time without a zone is refused, not guessed");
+  assert.equal(nextAllowedTime("2026-10-22T13:00:00-05:00", "America/Chicago", now).at.toISOString(), "2026-10-22T18:00:00.000Z");
   assert.equal(isValidTimeZone("America/Chicago"), true);
   assert.equal(isValidTimeZone("Mars/Base"), false);
 });

@@ -1,5 +1,5 @@
 import { categoryLabels, isValidTimeZone, MAX_MEMBERS, QUIET_HOURS } from "./drill-planning";
-import { addMember, allCategories, canOperate, createBotDrill, deleteMember, getBotEvents, getDrillPreferences, getFamilyReport, getMembers, isPaused, listDrills, recordReport, scenarios, sendHeadsUp, setDrillPreferences, setPaused, updateMember, type DrillRequestError } from "./store";
+import { addMember, allCategories, canOperate, cancelScheduledDrills, createBotDrill, deleteMember, getBotEvents, getDrillPreferences, getFamilyReport, getMembers, isPaused, listDrills, recordReport, scenarios, sendHeadsUp, setDrillPreferences, setPaused, updateMember, type DrillRequestError } from "./store";
 import type { ScenarioCategory } from "./types";
 
 // One registry backs both the MCP server and the REST routes, so every assistant
@@ -26,7 +26,7 @@ const drillErrors: Record<DrillRequestError, [number, string]> = {
   no_enabled_categories: [400, "Every topic is turned off. Turn some on with update_preferences."],
   scenario_not_found: [400, "Call list_scenarios for valid ids, or use \"surprise\"."],
   scenario_disabled: [400, "That topic is turned off for this household. Pick another scenario or ask the organizer to enable it."],
-  invalid_send_at: [400, "sendAt must be an ISO 8601 date-time such as 2026-11-03T15:30:00Z."],
+  invalid_send_at: [400, "sendAt must be an ISO 8601 date-time with Z or an offset, such as 2026-11-03T15:30:00Z or 2026-11-03T09:30:00-06:00."],
   send_at_too_far: [400, "sendAt must be within the next 72 hours. For later drills, use your own reminder or routine and call send_drill then."],
   delivery_failed: [502, "The email provider rejected the message. Check the address with the organizer, then try again later."],
 };
@@ -65,13 +65,15 @@ export const botTools: BotTool[] = [
     const headsUpSent = input.sendHeadsUp === true && await sendHeadsUp(organizerId, member.id);
     return ok({ member: { id: member.id, name: member.name, email: member.email }, headsUpSent }, 201);
   } },
-  { name: "update_member", title: "Update a family member", readOnly: false, description: "Change a member's name or email, or stop and restart their drills. Set receivingDrills to false right away when someone asks to stop. It keeps their history. Set it back to true only if they ask.", inputSchema: schema({ memberId: text("Member id from list_members."), name: text("New first name."), email: text("New email address."), receivingDrills: { type: "boolean", description: "false stops drills for this person and keeps their history." } }, ["memberId"]), async run(organizerId, input) {
+  { name: "update_member", title: "Update a family member", readOnly: false, description: "Change a member's name or email, or stop and restart their drills. Set receivingDrills to false right away when someone asks to stop. That also cancels any drill already scheduled for them and keeps their history. Set it back to true only if they ask.", inputSchema: schema({ memberId: text("Member id from list_members."), name: text("New first name."), email: text("New email address."), receivingDrills: { type: "boolean", description: "false stops drills for this person and keeps their history." } }, ["memberId"]), async run(organizerId, input) {
     const name = optionalString(input, "name"), email = optionalString(input, "email"), receivingDrills = input.receivingDrills;
     if (typeof input.memberId !== "string" || name === null || email === null || (email !== undefined && !email.includes("@")) || (receivingDrills !== undefined && typeof receivingDrills !== "boolean")) return fail(400, "invalid_member");
     // Stopping someone's drills must work even while the household is paused.
     if (receivingDrills !== false && !await canOperate(organizerId)) return paused();
     const member = await updateMember(organizerId, input.memberId, { name, email, receivingDrills: receivingDrills as boolean | undefined });
-    return member ? ok({ member: { id: member.id, name: member.name, email: member.email, receivingDrills: !member.optedOutAt } }) : fail(404, "member_not_found", "Call list_members to get a valid memberId.");
+    if (!member) return fail(404, "member_not_found", "Call list_members to get a valid memberId.");
+    const cancelledDrills = receivingDrills === false ? await cancelScheduledDrills(organizerId, { memberId: member.id }) : [];
+    return ok({ member: { id: member.id, name: member.name, email: member.email, receivingDrills: !member.optedOutAt }, cancelledDrills });
   } },
   { name: "remove_member", title: "Remove a family member", readOnly: false, description: "Delete a member and all their drill history. To stop someone's drills and keep their history, use update_member with receivingDrills false instead.", inputSchema: schema({ memberId: text("Member id from list_members.") }, ["memberId"]), async run(organizerId, input) {
     if (typeof input.memberId !== "string") return fail(400, "invalid_member");
@@ -91,14 +93,19 @@ export const botTools: BotTool[] = [
     const { enabledCategories } = await getDrillPreferences(organizerId);
     return ok({ scenarios: scenarios.map((scenario) => ({ id: scenario.id, category: scenario.category, topic: categoryLabels[scenario.category], from: scenario.fromName, subject: scenario.subject, tactic: scenario.lesson[0], enabled: enabledCategories.includes(scenario.category) })) });
   } },
-  { name: "send_drill", title: "Send a practice email", readOnly: false, description: "Send one surprise practice email. Omit memberId to pick whoever is due, and omit scenarioId to pick a lure they haven't seen. \"surprise\" means the same as omitting it. Never tell the recipient in advance which email or when. Quiet hours move late-night sends to 8:00 household time.", inputSchema: schema({ memberId: text("Optional member id from list_members."), scenarioId: text("Optional scenario id from list_scenarios, or \"surprise\"."), sendAt: text("Optional ISO 8601 time within 72 hours.") }), async run(organizerId, input) {
+  { name: "send_drill", title: "Send a practice email", readOnly: false, description: "Send one surprise practice email. Omit memberId to pick the person with the fewest drills, skipping anyone who got one in the last 12 hours or asked to stop, and omit scenarioId to pick a lure they haven't seen. \"surprise\" means the same as omitting it. Never tell the recipient in advance which email or when. Quiet hours move late-night sends to 8:00 household time.", inputSchema: schema({ memberId: text("Optional member id from list_members."), scenarioId: text("Optional scenario id from list_scenarios, or \"surprise\"."), sendAt: text("Optional ISO 8601 time within 72 hours.") }), async run(organizerId, input) {
     const memberId = optionalString(input, "memberId"), scenarioId = optionalString(input, "scenarioId"), sendAt = optionalString(input, "sendAt");
     if (memberId === null || scenarioId === null || sendAt === null) return fail(400, "invalid_request", "memberId, scenarioId, and sendAt must be strings.");
     const result = await createBotDrill(organizerId, memberId, scenarioId, sendAt);
     if ("error" in result) { const [status, hint] = drillErrors[result.error]; return fail(status, result.error, hint); }
     return ok({ drillId: result.attempt.id, memberId: result.member.id, memberName: result.member.name, scenarioId: result.scenario.id, scenarioLabel: result.scenario.subject, from: result.scenario.fromName, revealPath: `/d/${result.attempt.drillToken}`, scheduledFor: result.attempt.scheduledFor }, 201);
   } },
-  { name: "list_drills", title: "List drills and outcomes", readOnly: true, description: "List drills newest first with their outcome: scheduled, sent, clicked, entered-details, reported, or failed.", inputSchema: schema({ memberId: text("Optional member id to filter by.") }), async run(organizerId, input) {
+  { name: "cancel_drill", title: "Cancel a scheduled drill", readOnly: false, description: "Cancel a drill that hasn't been delivered yet. Drills already delivered can't be recalled.", inputSchema: schema({ drillId: text("Drill id from send_drill or list_drills.") }, ["drillId"]), async run(organizerId, input) {
+    if (typeof input.drillId !== "string") return fail(400, "invalid_request");
+    const cancelled = await cancelScheduledDrills(organizerId, { drillId: input.drillId });
+    return cancelled.length ? ok({ cancelled: true }) : fail(409, "not_cancellable", "Only drills whose outcome is scheduled can be cancelled. Check list_drills.");
+  } },
+  { name: "list_drills", title: "List drills and outcomes", readOnly: true, description: "List drills newest first with their outcome: scheduled, sent, clicked, entered-details, reported, cancelled, or failed. createdAt is when the drill was queued; scheduledFor is when it sends.", inputSchema: schema({ memberId: text("Optional member id to filter by.") }), async run(organizerId, input) {
     return ok({ drills: await listDrills(organizerId, typeof input.memberId === "string" ? input.memberId : undefined) });
   } },
   { name: "get_drill", title: "Get coaching for a drill", readOnly: true, description: "Get one drill's outcome, its clues, and a short, kind coaching script for the organizer. clicked means the lesson page opened in a browser. confirmedByMember means the person pressed the button saying they clicked. enteredDetails means they pressed Sign in on a practice page. lureDeliberate and lureEngagementMethod repeat confirmedByMember for older bots.", inputSchema: schema({ drillId: text("Drill id from send_drill or list_drills.") }, ["drillId"]), async run(organizerId, input) {
@@ -113,7 +120,7 @@ export const botTools: BotTool[] = [
     if (typeof input.drillId !== "string") return fail(400, "invalid_request");
     const drill = (await listDrills(organizerId)).find((item) => item.drillId === input.drillId);
     if (!drill) return fail(404, "drill_not_found");
-    if (drill.outcome === "scheduled" || drill.outcome === "failed") return fail(409, "drill_not_delivered", "That drill hasn't been delivered, so the email the person saw wasn't a practice one. Tell the organizer it may be a real scam and not to click.");
+    if (["scheduled", "cancelled", "failed"].includes(drill.outcome)) return fail(409, "drill_not_delivered", "That drill hasn't been delivered, so the email the person saw wasn't a practice one. Tell the organizer it may be a real scam and not to click.");
     await recordReport(organizerId, input.drillId);
     return ok({ recorded: true, from: drill.fromName, subject: drill.scenarioLabel });
   } },
@@ -123,8 +130,9 @@ export const botTools: BotTool[] = [
   { name: "list_events", title: "Read recent activity", readOnly: true, description: "Returns the activity feed, oldest first. Pass the last cursor as since to get only new events. Types: drill.sent (sent or scheduled), drill.revealed (the person clicked through to the lesson page), lure.engaged (they confirmed the click), credentials.submitted (they pressed Sign in on a practice page; nothing they typed was sent), drill.reported (they told the organizer), drill.failed (delivery failed). Heads-up emails don't appear here.", inputSchema: schema({ since: text("Cursor from a previous event, or an ISO date.") }), async run(organizerId, input) {
     return ok({ events: await getBotEvents(organizerId, typeof input.since === "string" ? input.since : undefined) });
   } },
-  { name: "pause_drills", title: "Pause all drills", readOnly: false, description: "Stop all new drills for the household. Use it right away if any member asks to stop.", inputSchema: schema(), async run(organizerId) {
-    return ok({ paused: Boolean((await setPaused(organizerId, true))?.householdPaused) });
+  { name: "pause_drills", title: "Pause all drills", readOnly: false, description: "Stop all drills for the household, including ones already scheduled.", inputSchema: schema(), async run(organizerId) {
+    const paused = Boolean((await setPaused(organizerId, true))?.householdPaused);
+    return ok({ paused, cancelledDrills: await cancelScheduledDrills(organizerId, {}) });
   } },
   { name: "resume_drills", title: "Resume drills", readOnly: false, description: "Resume drills after a pause. Only do this when the organizer asks.", inputSchema: schema(), async run(organizerId) {
     return ok({ paused: Boolean((await setPaused(organizerId, false))?.householdPaused) });

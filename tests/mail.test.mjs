@@ -9,7 +9,7 @@ test.after(lib.cleanup);
 const scenario = { id: "parcel-redelivery", category: "delivery", layoutId: "cta-hero", brandId: "swiftbox", fromName: "Parcel Notice", subject: "Delivery update", preview: "An update", heroTitle: "Update", heroCaption: "Parcel waiting", bodyParagraphs: ["Please review."], footerLines: ["Parcel Notice"], clues: [], lesson: ["a", "b", "c"] };
 const member = { id: "member-1", name: "Maya", email: "maya@example.test", householdId: "home-1" };
 const drill = (scheduledFor) => ({ member, scenario, attempt: { drillToken: "token-1", scheduledFor } });
-const fakeResend = (calls) => ({ emails: { send: async (payload) => { calls.push(payload); return { data: { id: "email-1" }, error: null }; } } });
+const fakeResend = (calls) => ({ emails: { send: async (payload) => { calls.push(payload); return { data: { id: "email-1" }, error: null }; }, cancel: async (id) => { calls.push({ cancelled: id }); return { data: { id }, error: null }; } } });
 
 test("drills borrow only the fictional display name and keep the verified address", async () => {
   const calls = [];
@@ -22,6 +22,14 @@ test("drills borrow only the fictional display name and keep the verified addres
   assert.equal(calls[0].scheduledAt, undefined);
   assert.match(calls[0].text, /http:\/\/localhost:3000\/d\/token-1/);
   assert.match(calls[0].html, /http:\/\/localhost:3000\/d\/token-1/);
+});
+
+test("scheduled drills can be pulled back out of Resend's queue", async () => {
+  const calls = [], adapter = createResendMailAdapter(fakeResend(calls), "drills@familydrill.com");
+  const id = await adapter.sendDrill(drill(new Date(Date.now() + 6 * 3_600_000).toISOString()));
+  assert.equal(id, "email-1");
+  await adapter.cancelDrill(id);
+  assert.deepEqual(calls[1], { cancelled: "email-1" });
 });
 
 test("future drills are handed to Resend's scheduler", async () => {

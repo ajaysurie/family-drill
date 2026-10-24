@@ -91,7 +91,7 @@ Queues a drill using an optional JSON body:
 }
 ```
 
-All three fields are optional strings. Without `memberId`, the app picks the member with the fewest drills and skips anyone who got a drill in the last 12 hours. The default `scenarioId` is `surprise`, which picks an enabled scenario the member has not seen, from a different category than their last drill. Without `sendAt`, the drill sends now. A `sendAt` in the past also sends now. The app refuses a `sendAt` more than 72 hours ahead.
+All three fields are optional strings. Without `memberId`, the app picks the member with the fewest drills and skips anyone who got a drill in the last 12 hours. The default `scenarioId` is `surprise`, which picks an enabled scenario the member has not seen, from a different category than their last drill. Without `sendAt`, the drill sends now. A `sendAt` must include `Z` or an offset, such as `2026-11-03T09:30:00-06:00`; a time without one is refused rather than guessed. A `sendAt` in the past also sends now. The app refuses a `sendAt` more than 72 hours ahead.
 
 Quiet hours use the household's `timeZone` preference, which is UTC until the assistant sets it. A time before 08:00 or at or after 21:00 local time moves to the next 08:00 local. The app hands future times to Resend's scheduler. A household can create at most five drills in any one-hour window. Production sends through Resend when `MAIL_ADAPTER=resend`. Other environments use the console adapter.
 
@@ -104,11 +104,13 @@ A drill to a member whose `receivingDrills` is `false` fails with `403` and `mem
 
 #### `GET /api/bot/drills?memberId=<id>`
 
-Lists drills newest first. Each item has `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `fromName`, `category`, `sentAt`, `scheduledFor`, `outcome`, and the flags `clicked`, `confirmedByMember`, `enteredDetails`, and `reported`. The `outcome` is one of `scheduled`, `sent`, `clicked`, `entered-details`, `reported`, or `failed`.
+Lists drills newest first. Each item has `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `fromName`, `category`, `createdAt`, `scheduledFor`, `outcome`, and the flags `clicked`, `confirmedByMember`, `enteredDetails`, and `reported`. `createdAt` is when the drill was queued and `scheduledFor` is when it sends. The `outcome` is one of `scheduled`, `sent`, `clicked`, `entered-details`, `reported`, `cancelled`, or `failed`.
+
+The `cancel_drill` tool, or `POST /api/bot/tools/cancel_drill`, cancels a drill whose outcome is `scheduled` and removes it from the email provider's queue. It returns `409` with `not_cancellable` for any other drill. Setting a member's `receivingDrills` to `false` and pausing the household both cancel scheduled drills too, and report them in `cancelledDrills`.
 
 #### `POST /api/bot/drills/:id/report`
 
-Records `drill.reported` when the organizer says the member spotted the drill and told them. Check first that the sender or subject they describe matches the drill. Returns `{ "recorded": true, "from", "subject" }`, `404` for an unknown drill, or `409` with `drill_not_delivered` for a drill that is still scheduled or failed. In that case the email the person saw was not a practice one.
+Records `drill.reported` when the organizer says the member spotted the drill and told them. Check first that the sender or subject they describe matches the drill. Returns `{ "recorded": true, "from", "subject" }`, `404` for an unknown drill, or `409` with `drill_not_delivered` for a drill that is scheduled, cancelled, or failed. In that case the email the person saw was not a practice one.
 
 #### `GET /api/bot/drills/:id`
 
@@ -131,6 +133,7 @@ Returns an array of events ordered oldest first. Each item contains `cursor`, `t
 - `lure.engaged`
 - `credentials.submitted`
 - `drill.reported`
+- `drill.cancelled`
 - `drill.failed`
 
 Pass the last event's `cursor` as `since` to request later events. If `since` is not a known event ID but parses as a date, it acts as an exclusive timestamp cutoff. An absent or unusable cursor returns all events. Events are scoped to the authenticated organizer.

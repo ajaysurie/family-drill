@@ -8,7 +8,7 @@ export type HouseholdAgreement = {
 };
 
 export type Member = { id: string; name: string; email: string; householdId: string; receivingDrills?: boolean };
-export type Attempt = { id: string; memberId: string; scenarioId: string; drillToken: string; createdAt: string; scheduledFor?: string };
+export type Attempt = { id: string; memberId: string; scenarioId: string; drillToken: string; createdAt: string; scheduledFor?: string; providerMessageId?: string | null };
 export type DrillEvent = {
   id: string;
   attemptId: string;
@@ -16,7 +16,7 @@ export type DrillEvent = {
   occurredAt: string;
   summary: string;
 };
-export type DrillEventType = "drill.sent" | "drill.revealed" | "lure.engaged" | "credentials.submitted" | "drill.reported" | "drill.failed";
+export type DrillEventType = "drill.sent" | "drill.revealed" | "lure.engaged" | "credentials.submitted" | "drill.reported" | "drill.cancelled" | "drill.failed";
 export type Clue = { label: string; detail: string };
 export type Scenario = {
   id: string;

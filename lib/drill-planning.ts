@@ -12,8 +12,12 @@ const localHour = (date: Date, timeZone: string) => Number(new Intl.DateTimeForm
 
 export type SendTime = { at: Date } | { error: "invalid_send_at" | "send_at_too_far" };
 
+// A time without "Z" or an offset is ambiguous, so it is refused rather than guessed.
+const HAS_ZONE = /(?:Z|[+-]\d{2}:?\d{2})$/i;
+
 // Quiet hours are evaluated in the household's own time zone so nobody gets a 3 a.m. drill.
 export function nextAllowedTime(requested: string | undefined, timeZone = "UTC", now = new Date()): SendTime {
+  if (requested && !HAS_ZONE.test(requested.trim())) return { error: "invalid_send_at" };
   const asked = requested ? new Date(requested) : new Date(now);
   if (Number.isNaN(asked.valueOf())) return { error: "invalid_send_at" };
   if (asked.valueOf() - now.valueOf() > MAX_SCHEDULE_LEAD_MS) return { error: "send_at_too_far" };
@@ -48,14 +52,14 @@ export function pickScenario(eligible: Scenario[], history: PastDrill[], memberI
   return choices[Math.floor(random() * choices.length)];
 }
 
-export type DrillOutcome = "scheduled" | "sent" | "clicked" | "entered-details" | "reported" | "failed";
+export type DrillOutcome = "scheduled" | "sent" | "clicked" | "entered-details" | "reported" | "cancelled" | "failed";
 export type DrillStatus = { outcome: DrillOutcome; clicked: boolean; confirmedByMember: boolean; enteredDetails: boolean; reported: boolean };
 
 export function drillStatus(events: DrillEventType[], scheduledFor: Date | undefined, now = new Date()): DrillStatus {
   const has = (type: DrillEventType) => events.includes(type);
   const confirmedByMember = has("lure.engaged"), enteredDetails = has("credentials.submitted"), reported = has("drill.reported");
   const clicked = confirmedByMember || enteredDetails || has("drill.revealed");
-  const outcome: DrillOutcome = has("drill.failed") ? "failed" : enteredDetails ? "entered-details" : clicked ? "clicked" : reported ? "reported" : scheduledFor && scheduledFor > now ? "scheduled" : "sent";
+  const outcome: DrillOutcome = has("drill.failed") ? "failed" : has("drill.cancelled") ? "cancelled" : enteredDetails ? "entered-details" : clicked ? "clicked" : reported ? "reported" : scheduledFor && scheduledFor > now ? "scheduled" : "sent";
   return { outcome, clicked, confirmedByMember, enteredDetails, reported };
 }
 

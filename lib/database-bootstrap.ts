@@ -3,6 +3,7 @@ DO $$ BEGIN CREATE TYPE "AgreementStatus" AS ENUM ('draft', 'active'); EXCEPTION
 DO $$ BEGIN CREATE TYPE "DrillEventType" AS ENUM ('drill.sent', 'drill.revealed', 'lure.engaged', 'credentials.submitted', 'drill.failed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 ALTER TYPE "DrillEventType" ADD VALUE IF NOT EXISTS 'credentials.submitted';
 ALTER TYPE "DrillEventType" ADD VALUE IF NOT EXISTS 'drill.reported';
+ALTER TYPE "DrillEventType" ADD VALUE IF NOT EXISTS 'drill.cancelled';
 CREATE TABLE IF NOT EXISTS "Organizer" ("id" text PRIMARY KEY, "name" text, "email" text UNIQUE, "emailVerified" timestamp, "image" text);
 CREATE TABLE IF NOT EXISTS "Account" ("userId" text NOT NULL REFERENCES "Organizer"("id") ON DELETE CASCADE, "type" text NOT NULL, "provider" text NOT NULL, "providerAccountId" text NOT NULL, "refresh_token" text, "access_token" text, "expires_at" integer, "token_type" text, "scope" text, "id_token" text, "session_state" text, PRIMARY KEY ("provider", "providerAccountId"));
 CREATE TABLE IF NOT EXISTS "Session" ("sessionToken" text PRIMARY KEY, "userId" text NOT NULL REFERENCES "Organizer"("id") ON DELETE CASCADE, "expires" timestamp NOT NULL);
@@ -14,6 +15,7 @@ ALTER TABLE "HouseholdAgreement" ADD COLUMN IF NOT EXISTS "timeZone" text;
 CREATE TABLE IF NOT EXISTS "Member" ("id" text PRIMARY KEY, "name" text NOT NULL, "email" text NOT NULL, "householdId" text NOT NULL REFERENCES "HouseholdAgreement"("id") ON DELETE CASCADE);
 ALTER TABLE "Member" ADD COLUMN IF NOT EXISTS "optedOutAt" timestamp;
 CREATE TABLE IF NOT EXISTS "Attempt" ("id" text PRIMARY KEY, "memberId" text NOT NULL REFERENCES "Member"("id") ON DELETE CASCADE, "scenarioId" text NOT NULL, "drillToken" text NOT NULL UNIQUE, "createdAt" timestamp NOT NULL DEFAULT now(), "scheduledFor" timestamp);
+ALTER TABLE "Attempt" ADD COLUMN IF NOT EXISTS "providerMessageId" text;
 CREATE TABLE IF NOT EXISTS "DrillEvent" ("id" text PRIMARY KEY, "attemptId" text NOT NULL REFERENCES "Attempt"("id") ON DELETE CASCADE, "type" "DrillEventType" NOT NULL, "occurredAt" timestamp NOT NULL DEFAULT now(), "summary" text NOT NULL, UNIQUE ("attemptId", "type"));
 CREATE TABLE IF NOT EXISTS "BotInstall" ("id" text PRIMARY KEY, "householdId" text NOT NULL UNIQUE REFERENCES "HouseholdAgreement"("id") ON DELETE CASCADE, "token" text NOT NULL UNIQUE, "active" integer NOT NULL DEFAULT 1, "householdPaused" integer NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS "OAuthClient" ("id" text PRIMARY KEY, "name" text NOT NULL, "redirectUris" text NOT NULL, "createdAt" timestamp NOT NULL DEFAULT now());
