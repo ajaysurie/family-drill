@@ -12,7 +12,18 @@ All three routes call the same registry in `lib/bot-tools.ts`, so they share val
 
 Tool names: `get_status`, `list_members`, `add_member`, `update_member`, `remove_member`, `get_preferences`, `update_preferences`, `list_scenarios`, `send_drill`, `list_drills`, `get_drill`, `record_report`, `get_family_report`, `list_events`, `pause_drills`, `resume_drills`. Errors return `{ "error": "<code>", "hint": "<what to do next>" }`.
 
-## Authentication
+## OAuth for MCP connectors
+
+Assistants that add connectors by URL and sign in, such as Meta Muse, Claude, and ChatGPT, use OAuth 2.1 with PKCE:
+
+1. An unauthenticated `POST /api/mcp` returns `401` with `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource"`.
+2. The resource metadata names the app origin as the authorization server. `/.well-known/oauth-authorization-server` lists the endpoints.
+3. The client registers at `POST /oauth/register` with `redirect_uris`. HTTPS, localhost, and native-app schemes are allowed. The response carries a `client_id` and uses no client secret.
+4. The organizer opens `/oauth/authorize` with `response_type=code`, `code_challenge`, and `code_challenge_method=S256`. A signed-out organizer goes to `/login` and comes back. The consent page names the client and the host it returns to.
+5. `POST /oauth/token` with `grant_type=authorization_code`, the `code`, and the `code_verifier` returns `{ "access_token", "token_type": "Bearer", "scope": "family-drill" }`. Codes expire after 10 minutes and work once.
+
+The access token is the household's install code, so **Replace code** on `/install` disconnects every assistant at once.
+
 
 The install bootstrap is the exception to token authentication:
 

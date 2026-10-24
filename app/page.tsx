@@ -14,6 +14,7 @@ const sample = scenarios.find((scenario) => scenario.id === "toll-unpaid")!;
 
 const faqs = [
   ["Isn't this just phishing my own family?", "No. Everyone agrees to practice first, and your assistant can send each person a heads-up email. Every company in the emails is invented, Family Drill collects nothing, and a click opens a lesson."],
+  ["How is this different from a workplace phishing test?", "Workplace tests often bait people with something they really want, then send whoever clicks to mandatory training. Family Drill does the opposite. Everyone gets a heads-up first, every lure comes from an invented company, no drill ever promises a real reward from someone they know, and a click leads to a two-minute talk instead of a penalty."],
   ["Will my relatives be upset?", "Nobody gets a score. The heads-up email and the lesson page both say that clicking is a normal part of practice. Anyone can ask to stop, and your assistant removes them with one step."],
   ["What does my assistant need access to?", "Only your Family Drill install code. It never sees anyone's passwords or inbox, and it can only use the built-in practice emails. It can't send anything else."],
   ["Which assistants work?", "Grok Bot and Meta Muse both work. So does any assistant that supports MCP connectors or can call an HTTPS API."],

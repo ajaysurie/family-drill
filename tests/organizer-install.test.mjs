@@ -19,7 +19,7 @@ test("verified organizers receive a copyable install code", async () => {
   assert.match(setup, /\/api\/mcp\/\$\{shown\}/);
   assert.match(setup, /\/agent\.md/);
   assert.match(page, /Keep this code private/);
-  assert.match(login, /redirectTo: "\/install"/);
+  assert.match(login, /redirectTo: safeNext\(formData\.get\("next"\)\)/);
   assert.match(constants, /https:\/\/app\.familydrill\.com/);
   assert.match(installConfig, /https:\/\/x\.ai\/bot\/GYM2zP9NA3J4_g9tTX0qS/);
   const verifyInstall = store.match(/export async function verifyInstall[\s\S]*?export async function setPaused/)?.[0] ?? "";
@@ -43,4 +43,18 @@ test("an active legacy install heals its draft agreement before a member write",
   assert.match(canOperate, /state\?\.active && !state\.paused && state\.status === "active"/);
   assert.match(membersRoute, /runBotTool\("add_member"/);
   assert.ok(addMemberTool.indexOf("await canOperate(organizerId)") > 0 && addMemberTool.indexOf("await canOperate(organizerId)") < addMemberTool.indexOf("await addMember(organizerId"), "member creation uses the self-healing operation check");
+});
+
+test("sign-in returns only to same-site paths", async () => {
+  const { loadLib } = await import("./helpers/load-ts.mjs");
+  const lib = await loadLib(["safe-next.ts"]);
+  const { safeNext } = await lib.import("safe-next");
+  try {
+    assert.equal(safeNext("/oauth/authorize?client_id=abc"), "/oauth/authorize?client_id=abc");
+    assert.equal(safeNext(undefined), "/install");
+    assert.equal(safeNext("https://evil.example/steal"), "/install");
+    assert.equal(safeNext("//evil.example"), "/install");
+  } finally {
+    await lib.cleanup();
+  }
 });

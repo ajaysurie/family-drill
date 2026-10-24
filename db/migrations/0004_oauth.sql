@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS "OAuthClient" ("id" text PRIMARY KEY, "name" text NOT NULL, "redirectUris" text NOT NULL, "createdAt" timestamp NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS "OAuthCode" ("code" text PRIMARY KEY, "clientId" text NOT NULL REFERENCES "OAuthClient"("id") ON DELETE CASCADE, "organizerId" text NOT NULL REFERENCES "Organizer"("id") ON DELETE CASCADE, "redirectUri" text NOT NULL, "codeChallenge" text NOT NULL, "expiresAt" timestamp NOT NULL, "usedAt" timestamp);

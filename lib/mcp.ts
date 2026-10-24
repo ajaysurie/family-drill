@@ -1,5 +1,7 @@
 import { authenticateBot } from "./store";
 import { botTools, callBotTool } from "./bot-tools";
+import { appBaseUrl } from "./email-assets";
+import { corsHeaders } from "./oauth";
 
 // A stateless Streamable HTTP MCP server: JSON-RPC over POST, JSON responses, no SSE stream.
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
@@ -29,14 +31,15 @@ async function handle(message: JsonRpcMessage, organizerId: string) {
 
 export async function handleMcpRequest(request: Request, token: string | null) {
   const bot = await authenticateBot(token);
-  if (!bot) return Response.json(error(null, -32001, "Unauthorized: use the install code from your Family Drill install page."), { status: 401, headers: { "WWW-Authenticate": 'Bearer realm="family-drill"' } });
+  if (!bot) return Response.json(error(null, -32001, "Unauthorized: use the install code from your Family Drill install page."), { status: 401, headers: { ...corsHeaders, "WWW-Authenticate": `Bearer resource_metadata="${appBaseUrl()}/.well-known/oauth-protected-resource"` } });
   let payload: unknown;
-  try { payload = await request.json(); } catch { return Response.json(error(null, -32700, "Parse error"), { status: 400 }); }
+  try { payload = await request.json(); } catch { return Response.json(error(null, -32700, "Parse error"), { status: 400, headers: corsHeaders }); }
   const messages = (Array.isArray(payload) ? payload : [payload]) as JsonRpcMessage[];
   const requests = messages.filter((message) => message && typeof message === "object" && "method" in message && message.id !== undefined);
-  if (!requests.length) return new Response(null, { status: 202 });
+  if (!requests.length) return new Response(null, { status: 202, headers: corsHeaders });
   const responses = await Promise.all(requests.map((message) => handle(message, bot.organizerId)));
-  return Response.json(Array.isArray(payload) ? responses : responses[0]);
+  return Response.json(Array.isArray(payload) ? responses : responses[0], { headers: corsHeaders });
 }
 
-export const mcpMethodNotAllowed = () => new Response("Family Drill's MCP server accepts JSON-RPC over POST only.", { status: 405, headers: { Allow: "POST" } });
+export const mcpMethodNotAllowed = () => new Response("Family Drill's MCP server accepts JSON-RPC over POST only.", { status: 405, headers: { ...corsHeaders, Allow: "POST" } });
+export const mcpPreflight = () => new Response(null, { status: 204, headers: corsHeaders });

@@ -13,9 +13,10 @@ The organizer gets an **install code** by signing in at ${appUrl}/login. It is a
 
 Pick whichever your platform supports:
 
-**A. MCP connector.** Use this if your platform supports it. Add a custom remote MCP server:
-- URL: \`${appUrl}/api/mcp\` with header \`Authorization: Bearer <install code>\`
-- or, if your platform only accepts a URL: \`${appUrl}/api/mcp/<install code>\`
+**A. MCP connector.** Use this if your platform supports it. Add a custom remote MCP server with any of these:
+- URL \`${appUrl}/api/mcp\` with OAuth sign-in. The organizer signs in with their email and chooses Allow. No code needed.
+- URL \`${appUrl}/api/mcp\` with header \`Authorization: Bearer <install code>\`
+- URL \`${appUrl}/api/mcp/<install code>\`, if your platform only accepts a URL
 
 **B. Plain HTTPS.** Every tool below is also \`POST ${appUrl}/api/bot/tools/<tool_name>\` with a JSON body of arguments and the header \`Authorization: Bearer <install code>\`. \`GET ${appUrl}/api/bot/tools\` lists tools and their JSON schemas. Example:
 
@@ -52,6 +53,8 @@ Keep messages short and warm. Never paste raw JSON at the organizer.
 
 - Only add people the organizer says are part of the household agreement. No coworkers, strangers, or public figures.
 - Never warn a recipient that a specific drill is coming, and never forward drill links yourself.
+- Never theme a drill around something real in the family's life, such as a gift, a bonus, a trip, or a relative. Drills use only the built-in invented companies, and you can't change their content. If the organizer asks, explain why: a fake reward someone really hoped for hurts trust.
+- Never treat a click as a failure. No scores, rankings, or required lessons.
 - Never write your own phishing emails, imitate real brands, banks, government agencies, or real people, or send mail outside Family Drill. Use only the built-in fictional scenarios.
 - Never ask for, store, or relay anyone's passwords, codes, or payment details.
 - If anyone asks to stop, call \`remove_member\` for them right away, or \`pause_drills\` to stop everyone, then tell the organizer.
