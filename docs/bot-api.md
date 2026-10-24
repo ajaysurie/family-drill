@@ -71,11 +71,11 @@ Adds a member. The JSON body requires a non-empty string `name` and a valid `ema
 
 #### `PATCH /api/bot/members/:id`
 
-Updates `name`, `email`, or both. Provided fields must be strings, and an email must contain `@`. The route returns `{ "member": ... }`, `400` for invalid input, `404` when the member is not in the organizer's household, or `403` when operation is paused/inactive.
+Updates `name`, `email`, or `receivingDrills`. Names and emails must be strings, and an email must contain `@`. Set `receivingDrills` to `false` when someone asks to stop: they get no more drills, and their history stays. That change works even while the household is paused. The route returns `{ "member": ... }` with `receivingDrills`, `400` for invalid input, `404` when the member is not in the organizer's household, or `403` for other changes while operation is paused or inactive.
 
 #### `DELETE /api/bot/members/:id`
 
-Deletes an organizer-owned member and returns `204` with no body. It returns `404` for an unknown or other-household member and `403` when operation is paused/inactive.
+Deletes an organizer-owned member and all their drill history, and returns `204` with no body. It returns `404` for an unknown or other-household member. To stop someone's drills and keep their history, use `PATCH` with `receivingDrills: false` instead.
 
 ### Drill queue
 
@@ -95,7 +95,7 @@ All three fields are optional strings. Without `memberId`, the app picks the mem
 
 Quiet hours use the household's `timeZone` preference, which is UTC until the assistant sets it. A time before 08:00 or at or after 21:00 local time moves to the next 08:00 local. The app hands future times to Resend's scheduler. A household can create at most five drills in any one-hour window. Production sends through Resend when `MAIL_ADAPTER=resend`. Other environments use the console adapter.
 
-A successful response has status `201` and contains `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `from`, `revealPath`, and `scheduledFor`. The errors are:
+A drill to a member whose `receivingDrills` is `false` fails with `403` and `member_opted_out`. A successful response has status `201` and contains `drillId`, `memberId`, `memberName`, `scenarioId`, `scenarioLabel`, `from`, `revealPath`, and `scheduledFor`. The errors are:
 
 - `400` for invalid input: `member_not_found`, `scenario_not_found`, `scenario_disabled`, `invalid_send_at`, `send_at_too_far`, `no_members`, or `no_enabled_categories`
 - `403` for an inactive agreement or paused install
@@ -108,7 +108,7 @@ Lists drills newest first. Each item has `drillId`, `memberId`, `memberName`, `s
 
 #### `POST /api/bot/drills/:id/report`
 
-Records `drill.reported` when the organizer says the member spotted the drill and told them. Returns `{ "recorded": true }` or `404`.
+Records `drill.reported` when the organizer says the member spotted the drill and told them. Check first that the sender or subject they describe matches the drill. Returns `{ "recorded": true, "from", "subject" }`, `404` for an unknown drill, or `409` with `drill_not_delivered` for a drill that is still scheduled or failed. In that case the email the person saw was not a practice one.
 
 #### `GET /api/bot/drills/:id`
 
@@ -116,7 +116,7 @@ Returns coaching detail for one of the organizer's drills. It has everything in 
 
 ### Reports and scenarios
 
-- `GET /api/bot/status` returns the setup state and suggested `nextSteps`, the same as `get_status`.
+- `GET /api/bot/status` returns `canSendDrills`, `householdPaused`, `organizerName`, `timeZone`, `quietHours`, `memberCount`, `receivingDrills`, `enabledCategories`, and suggested `nextSteps`, the same as `get_status`.
 - `GET /api/bot/report`: per-member `drillsSent`, `clicked`, `enteredDetails`, `reported`, and `lastDrill`.
 - `GET /api/bot/scenarios`: every scenario with `id`, `category`, `topic`, `from`, `subject`, `tactic`, and `enabled`.
 

@@ -7,7 +7,7 @@ export type HouseholdAgreement = {
   timeZone?: string;
 };
 
-export type Member = { id: string; name: string; email: string; householdId: string };
+export type Member = { id: string; name: string; email: string; householdId: string; receivingDrills?: boolean };
 export type Attempt = { id: string; memberId: string; scenarioId: string; drillToken: string; createdAt: string; scheduledFor?: string };
 export type DrillEvent = {
   id: string;

@@ -18,7 +18,7 @@ Pick whichever your platform supports:
 - URL \`${appUrl}/api/mcp\` with header \`Authorization: Bearer <install code>\`
 - URL \`${appUrl}/api/mcp/<install code>\`, if your platform only accepts a URL
 
-**B. Plain HTTPS.** Every tool below is also \`POST ${appUrl}/api/bot/tools/<tool_name>\` with a JSON body of arguments and the header \`Authorization: Bearer <install code>\`. \`GET ${appUrl}/api/bot/tools\` lists tools and their JSON schemas. Example:
+**B. Plain web requests.** Use HTTPS in production. Every tool below is also \`POST ${appUrl}/api/bot/tools/<tool_name>\` with a JSON body of arguments and the header \`Authorization: Bearer <install code>\`. \`GET ${appUrl}/api/bot/tools\` lists tools and their JSON schemas and needs no header. Example:
 
 \`\`\`bash
 curl -s -X POST ${appUrl}/api/bot/tools/get_status -H "Authorization: Bearer $FAMILY_DRILL_CODE"
@@ -33,7 +33,8 @@ A \`401\` means the code is wrong or the organizer replaced it. Ask the organize
 3. Ask who to add. For each person: first name and email. Confirm the person agreed to occasional practice emails, or will be told. Then \`add_member\`.
 4. Recommend the heads-up email (\`sendHeadsUp: true\`). It explains the program kindly and teaches a 4-question scam check. It does **not** say when drills come or what they look like.
 5. Offer topics with \`list_scenarios\`. Turn off any topic that would upset someone, such as school emails for a family without kids, with \`update_preferences\`.
-6. Offer to send the first surprise drill with \`send_drill\`, or to schedule one within the next 72 hours with \`sendAt\`.
+6. Offer to schedule the first surprise drill with \`send_drill\` and a \`sendAt\` one or two days out, so the heads-up email lands well before it. \`sendAt\` can be up to 72 hours ahead.
+7. If the organizer asks who got a drill or which one, you can tell them. Remind them not to mention it to that person, and never share the drill's lesson link.
 
 Keep messages short and warm. Never paste raw JSON at the organizer.
 
@@ -45,9 +46,9 @@ Keep messages short and warm. Never paste raw JSON at the organizer.
   - \`entered-details\`: they pressed "sign in" on a practice sign-in page. Nothing they typed left their device.
   - \`reported\`: they spotted it and told the organizer. **This is the win.**
   - \`sent\` or \`scheduled\`: nothing yet. Silence is normal.
-- **Reports.** When the organizer says someone spotted a drill, such as "Mom texted me about a weird toll email," call \`record_report\` for that person's latest drill and celebrate.
+- **Reports.** When the organizer says someone spotted a drill, such as "Mom texted me about a weird toll email," check \`list_drills\` first. If a delivered drill to that person matches the sender or subject they describe, call \`record_report\` for it and celebrate. If nothing matches, it may be a real scam. Tell the organizer not to click it and not to log it as practice.
 - **After a click.** Call \`get_drill\` and offer its \`coachingScript\`. Suggest a 2-minute, no-shame chat: what made it look real, which clue they could have caught, what they'll do next time.
-- **Weekly recap.** This is optional. Send a short, upbeat summary from \`get_family_report\`, and praise reports more than you mention clicks.
+- **Weekly recap.** This is optional. Send a short, upbeat summary from \`get_family_report\`, and praise reports more than you mention clicks. Never rank family members against each other.
 
 ## 4. Hard rules
 
@@ -57,7 +58,7 @@ Keep messages short and warm. Never paste raw JSON at the organizer.
 - Never treat a click as a failure. No scores, rankings, or required lessons.
 - Never write your own phishing emails, imitate real brands, banks, government agencies, or real people, or send mail outside Family Drill. Use only the built-in fictional scenarios.
 - Never ask for, store, or relay anyone's passwords, codes, or payment details.
-- If anyone asks to stop, call \`remove_member\` for them right away, or \`pause_drills\` to stop everyone, then tell the organizer.
+- If anyone asks to stop, call \`update_member\` with \`receivingDrills: false\` for them right away, or \`pause_drills\` to stop everyone, then tell the organizer. This keeps their history. Use \`remove_member\` only when the organizer asks to delete someone and their history.
 - Don't resume a paused household unless the organizer asks.
 
 ## 5. Tools

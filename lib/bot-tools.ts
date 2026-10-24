@@ -1,5 +1,5 @@
 import { categoryLabels, isValidTimeZone, MAX_MEMBERS, QUIET_HOURS } from "./drill-planning";
-import { addMember, allCategories, canOperate, createBotDrill, deleteMember, getBotEvents, getDrillPreferences, getFamilyReport, getHousehold, getMembers, isPaused, listDrills, recordReport, scenarios, sendHeadsUp, setDrillPreferences, setPaused, updateMember, type DrillRequestError } from "./store";
+import { addMember, allCategories, canOperate, createBotDrill, deleteMember, getBotEvents, getDrillPreferences, getFamilyReport, getMembers, isPaused, listDrills, recordReport, scenarios, sendHeadsUp, setDrillPreferences, setPaused, updateMember, type DrillRequestError } from "./store";
 import type { ScenarioCategory } from "./types";
 
 // One registry backs both the MCP server and the REST routes, so every assistant
@@ -20,8 +20,9 @@ const drillErrors: Record<DrillRequestError, [number, string]> = {
   install_inactive_or_paused: [403, "Drills are paused or the agreement is inactive. Ask the organizer before calling resume_drills."],
   rate_limited: [429, "A household can send at most five drills per hour. One drill per person every week or two works best."],
   member_not_found: [400, "Call list_members to get a valid memberId."],
+  member_opted_out: [403, "This person asked to stop receiving practice emails. Only turn drills back on with update_member if they say so themselves."],
   everyone_recently_drilled: [429, "Everyone got a drill in the last 12 hours. Try again tomorrow, or name a memberId if the organizer insists."],
-  no_members: [400, "Add a family member first with add_member."],
+  no_members: [400, "No one is set to receive drills. Add a family member with add_member."],
   no_enabled_categories: [400, "Every topic is turned off. Turn some on with update_preferences."],
   scenario_not_found: [400, "Call list_scenarios for valid ids, or use \"surprise\"."],
   scenario_disabled: [400, "That topic is turned off for this household. Pick another scenario or ask the organizer to enable it."],
@@ -31,22 +32,27 @@ const drillErrors: Record<DrillRequestError, [number, string]> = {
 };
 
 const nextSteps = async (organizerId: string) => {
-  const [members, preferences] = await Promise.all([getMembers(organizerId), getDrillPreferences(organizerId)]);
+  const [members, preferences, drills] = await Promise.all([getMembers(organizerId), getDrillPreferences(organizerId), listDrills(organizerId)]);
+  const receiving = members.filter((member) => member.receivingDrills);
   return [
     !preferences.organizerName && "Ask the organizer for their first name and save it as organizerName with update_preferences. It appears in the heads-up email.",
     !preferences.timeZone && "Ask which time zone the family lives in and save it as timeZone with update_preferences. Quiet hours use it.",
-    !members.length && "Ask who to add. For each relative, collect a first name and email address, then call add_member.",
-    members.length > 0 && "Offer to send the first surprise drill with send_drill. Suggest spacing drills one to two weeks apart per person.",
+    !receiving.length && "Ask who to add. For each relative, collect a first name and email address, confirm they agreed or will be told, then call add_member. Recommend sendHeadsUp.",
+    receiving.length > 0 && !drills.length && preferences.enabledCategories.length === allCategories.length && "Offer the topics from list_scenarios and ask whether any should be turned off.",
+    receiving.length > 0 && !drills.length && "Offer to schedule the first surprise drill with send_drill and a sendAt one or two days from now, so the heads-up email arrives well before it.",
+    drills.length > 0 && "Drills are running. Suggest about one per person every week or two, at varied times.",
   ].filter(Boolean);
 };
 
 export const botTools: BotTool[] = [
   { name: "get_status", title: "Check setup", readOnly: true, description: "Start here. Returns whether drills can run, the household's settings, member count, and suggested next steps for setup.", inputSchema: schema(), async run(organizerId) {
-    const [household, members, preferences, operating, householdPaused] = await Promise.all([getHousehold(organizerId), getMembers(organizerId), getDrillPreferences(organizerId), canOperate(organizerId), isPaused(organizerId)]);
-    return ok({ ready: operating, householdPaused, agreement: household?.status ?? "missing", organizerName: preferences.organizerName, timeZone: preferences.timeZone, quietHours: `${QUIET_HOURS.start}:00-${QUIET_HOURS.end}:00 household time`, memberCount: members.length, enabledCategories: preferences.enabledCategories, nextSteps: await nextSteps(organizerId) });
+    const operating = await canOperate(organizerId);
+    const [members, preferences, householdPaused] = await Promise.all([getMembers(organizerId), getDrillPreferences(organizerId), isPaused(organizerId)]);
+    const receiving = members.filter((member) => member.receivingDrills).length;
+    return ok({ canSendDrills: operating && receiving > 0, householdPaused, organizerName: preferences.organizerName, timeZone: preferences.timeZone, quietHours: `${QUIET_HOURS.start}:00-${QUIET_HOURS.end}:00 household time`, memberCount: members.length, receivingDrills: receiving, enabledCategories: preferences.enabledCategories, nextSteps: await nextSteps(organizerId) });
   } },
-  { name: "list_members", title: "List family members", readOnly: true, description: "List the household members who can receive practice emails.", inputSchema: schema(), async run(organizerId) {
-    return ok({ members: (await getMembers(organizerId)).map(({ id, name, email }) => ({ id, name, email })) });
+  { name: "list_members", title: "List family members", readOnly: true, description: "List household members. receivingDrills is false for anyone who asked to stop.", inputSchema: schema(), async run(organizerId) {
+    return ok({ members: (await getMembers(organizerId)).map(({ id, name, email, receivingDrills }) => ({ id, name, email, receivingDrills })) });
   } },
   { name: "add_member", title: "Add a family member", readOnly: false, description: "Add a relative who agreed to receive practice emails. Ask the organizer before setting sendHeadsUp. We recommend it, because the heads-up email tells the relative that practice emails are coming, so nobody gets alarmed.", inputSchema: schema({ name: text("First name the emails should use, such as \"Ruth\"."), email: text("Their email address."), sendHeadsUp: { type: "boolean", description: "Send a friendly email that explains Family Drill and the 4-question scam check. We recommend it." } }, ["name", "email"]), async run(organizerId, input) {
     if (!await canOperate(organizerId)) return paused();
@@ -59,22 +65,22 @@ export const botTools: BotTool[] = [
     const headsUpSent = input.sendHeadsUp === true && await sendHeadsUp(organizerId, member.id);
     return ok({ member: { id: member.id, name: member.name, email: member.email }, headsUpSent }, 201);
   } },
-  { name: "update_member", title: "Update a family member", readOnly: false, description: "Change a member's name or email.", inputSchema: schema({ memberId: text("Member id from list_members."), name: text("New first name."), email: text("New email address.") }, ["memberId"]), async run(organizerId, input) {
-    if (!await canOperate(organizerId)) return paused();
-    const name = optionalString(input, "name"), email = optionalString(input, "email");
-    if (typeof input.memberId !== "string" || name === null || email === null || (email !== undefined && !email.includes("@"))) return fail(400, "invalid_member");
-    const member = await updateMember(organizerId, input.memberId, { name, email });
-    return member ? ok({ member: { id: member.id, name: member.name, email: member.email } }) : fail(404, "member_not_found", "Call list_members to get a valid memberId.");
+  { name: "update_member", title: "Update a family member", readOnly: false, description: "Change a member's name or email, or stop and restart their drills. Set receivingDrills to false right away when someone asks to stop. It keeps their history. Set it back to true only if they ask.", inputSchema: schema({ memberId: text("Member id from list_members."), name: text("New first name."), email: text("New email address."), receivingDrills: { type: "boolean", description: "false stops drills for this person and keeps their history." } }, ["memberId"]), async run(organizerId, input) {
+    const name = optionalString(input, "name"), email = optionalString(input, "email"), receivingDrills = input.receivingDrills;
+    if (typeof input.memberId !== "string" || name === null || email === null || (email !== undefined && !email.includes("@")) || (receivingDrills !== undefined && typeof receivingDrills !== "boolean")) return fail(400, "invalid_member");
+    // Stopping someone's drills must work even while the household is paused.
+    if (receivingDrills !== false && !await canOperate(organizerId)) return paused();
+    const member = await updateMember(organizerId, input.memberId, { name, email, receivingDrills: receivingDrills as boolean | undefined });
+    return member ? ok({ member: { id: member.id, name: member.name, email: member.email, receivingDrills: !member.optedOutAt } }) : fail(404, "member_not_found", "Call list_members to get a valid memberId.");
   } },
-  { name: "remove_member", title: "Remove a family member", readOnly: false, description: "Remove a member and their drill history. Do this right away if anyone asks to stop receiving practice emails.", inputSchema: schema({ memberId: text("Member id from list_members.") }, ["memberId"]), async run(organizerId, input) {
-    if (!await canOperate(organizerId)) return paused();
+  { name: "remove_member", title: "Remove a family member", readOnly: false, description: "Delete a member and all their drill history. To stop someone's drills and keep their history, use update_member with receivingDrills false instead.", inputSchema: schema({ memberId: text("Member id from list_members.") }, ["memberId"]), async run(organizerId, input) {
     if (typeof input.memberId !== "string") return fail(400, "invalid_member");
     return await deleteMember(organizerId, input.memberId) ? ok({ removed: true }) : fail(404, "member_not_found");
   } },
   { name: "get_preferences", title: "Read drill settings", readOnly: true, description: "Read enabled topics, time zone, organizer name, and the SMS preview setting.", inputSchema: schema(), async run(organizerId) {
     return ok(await getDrillPreferences(organizerId));
   } },
-  { name: "update_preferences", title: "Change drill settings", readOnly: false, description: `Change any of these settings. enabledCategories takes any of ${allCategories.join(", ")}. timeZone takes an IANA name such as America/Chicago. organizerName is the organizer's first name. smsPreview is true or false.`, inputSchema: schema({ enabledCategories: { type: "array", items: { type: "string", enum: allCategories }, description: "Topics drills may use." }, timeZone: text("IANA time zone such as America/New_York."), organizerName: text("Organizer's first name, used in heads-up emails."), smsPreview: { type: "boolean" } }), async run(organizerId, input) {
+  { name: "update_preferences", title: "Change drill settings", readOnly: false, description: `Change any of these settings. enabledCategories is the full list of topics to allow and replaces the current list. It takes any of ${allCategories.join(", ")}. timeZone takes an IANA name such as America/Chicago. organizerName is the organizer's first name. smsPreview turns on a text-message preview in the web dashboard. It never sends texts.`, inputSchema: schema({ enabledCategories: { type: "array", items: { type: "string", enum: allCategories }, description: "Topics drills may use." }, timeZone: text("IANA time zone such as America/New_York."), organizerName: text("Organizer's first name, used in heads-up emails."), smsPreview: { type: "boolean" } }), async run(organizerId, input) {
     const { enabledCategories, timeZone, organizerName, smsPreview } = input;
     if (enabledCategories !== undefined && (!Array.isArray(enabledCategories) || enabledCategories.some((value) => !allCategories.includes(value as ScenarioCategory)))) return fail(400, "invalid_preferences", `enabledCategories must only contain: ${allCategories.join(", ")}.`);
     if (timeZone !== undefined && (typeof timeZone !== "string" || !isValidTimeZone(timeZone))) return fail(400, "invalid_preferences", "timeZone must be an IANA name such as America/Los_Angeles.");
@@ -85,7 +91,7 @@ export const botTools: BotTool[] = [
     const { enabledCategories } = await getDrillPreferences(organizerId);
     return ok({ scenarios: scenarios.map((scenario) => ({ id: scenario.id, category: scenario.category, topic: categoryLabels[scenario.category], from: scenario.fromName, subject: scenario.subject, tactic: scenario.lesson[0], enabled: enabledCategories.includes(scenario.category) })) });
   } },
-  { name: "send_drill", title: "Send a practice email", readOnly: false, description: "Send one surprise practice email. Omit memberId to pick whoever is due, and omit scenarioId to pick a lure they haven't seen. Never tell the recipient in advance which email or when. Quiet hours move late-night sends to 8:00 household time.", inputSchema: schema({ memberId: text("Optional member id from list_members."), scenarioId: text("Optional scenario id from list_scenarios, or \"surprise\"."), sendAt: text("Optional ISO 8601 time within 72 hours.") }), async run(organizerId, input) {
+  { name: "send_drill", title: "Send a practice email", readOnly: false, description: "Send one surprise practice email. Omit memberId to pick whoever is due, and omit scenarioId to pick a lure they haven't seen. \"surprise\" means the same as omitting it. Never tell the recipient in advance which email or when. Quiet hours move late-night sends to 8:00 household time.", inputSchema: schema({ memberId: text("Optional member id from list_members."), scenarioId: text("Optional scenario id from list_scenarios, or \"surprise\"."), sendAt: text("Optional ISO 8601 time within 72 hours.") }), async run(organizerId, input) {
     const memberId = optionalString(input, "memberId"), scenarioId = optionalString(input, "scenarioId"), sendAt = optionalString(input, "sendAt");
     if (memberId === null || scenarioId === null || sendAt === null) return fail(400, "invalid_request", "memberId, scenarioId, and sendAt must be strings.");
     const result = await createBotDrill(organizerId, memberId, scenarioId, sendAt);
@@ -95,7 +101,7 @@ export const botTools: BotTool[] = [
   { name: "list_drills", title: "List drills and outcomes", readOnly: true, description: "List drills newest first with their outcome: scheduled, sent, clicked, entered-details, reported, or failed.", inputSchema: schema({ memberId: text("Optional member id to filter by.") }), async run(organizerId, input) {
     return ok({ drills: await listDrills(organizerId, typeof input.memberId === "string" ? input.memberId : undefined) });
   } },
-  { name: "get_drill", title: "Get coaching for a drill", readOnly: true, description: "Get one drill's outcome plus the clues and a short, kind coaching script the organizer can use with that relative.", inputSchema: schema({ drillId: text("Drill id from send_drill or list_drills.") }, ["drillId"]), async run(organizerId, input) {
+  { name: "get_drill", title: "Get coaching for a drill", readOnly: true, description: "Get one drill's outcome, its clues, and a short, kind coaching script for the organizer. clicked means the lesson page opened in a browser. confirmedByMember means the person pressed the button saying they clicked. enteredDetails means they pressed Sign in on a practice page. lureDeliberate and lureEngagementMethod repeat confirmedByMember for older bots.", inputSchema: schema({ drillId: text("Drill id from send_drill or list_drills.") }, ["drillId"]), async run(organizerId, input) {
     if (typeof input.drillId !== "string") return fail(400, "invalid_request");
     const drill = (await listDrills(organizerId)).find((item) => item.drillId === input.drillId);
     if (!drill) return fail(404, "drill_not_found");
@@ -103,14 +109,18 @@ export const botTools: BotTool[] = [
     const script = drill.reported && !drill.clicked ? `Great catch, ${drill.memberName}! You spotted the ${scenario.fromName} email and told me. That's what to do with a real one.` : drill.clicked ? `Hey ${drill.memberName}, that ${scenario.fromName} email was one of our practice ones. No harm done. The giveaways were: ${scenario.clues.map((clue) => clue.label.toLowerCase()).join("; ")}. Next time, pause and check with me first.` : `No click yet on the ${scenario.fromName} email. Don't mention it until a few days have passed.`;
     return ok({ ...drill, lessonBullets: scenario.lesson, clues: scenario.clues, coachingScript: script, lureDeliberate: drill.confirmedByMember, lureEngagementMethod: drill.confirmedByMember ? "explicit_button" : null });
   } },
-  { name: "record_report", title: "Record that someone reported a drill", readOnly: false, description: "Call when the organizer says a relative spotted a practice email and told them or forwarded it instead of clicking. This is the win to celebrate.", inputSchema: schema({ drillId: text("Drill id from list_drills. Use the member's most recent drill if unsure.") }, ["drillId"]), async run(organizerId, input) {
+  { name: "record_report", title: "Record that someone reported a drill", readOnly: false, description: "Call when the organizer says a relative spotted a practice email and told them or forwarded it instead of clicking. First check with list_drills that the sender or subject they describe matches a delivered drill. If nothing matches, it may be a real scam: tell the organizer not to click, and don't record it.", inputSchema: schema({ drillId: text("Drill id from list_drills whose sender or subject matches what the person described.") }, ["drillId"]), async run(organizerId, input) {
     if (typeof input.drillId !== "string") return fail(400, "invalid_request");
-    return await recordReport(organizerId, input.drillId) ? ok({ recorded: true }) : fail(404, "drill_not_found");
+    const drill = (await listDrills(organizerId)).find((item) => item.drillId === input.drillId);
+    if (!drill) return fail(404, "drill_not_found");
+    if (drill.outcome === "scheduled" || drill.outcome === "failed") return fail(409, "drill_not_delivered", "That drill hasn't been delivered, so the email the person saw wasn't a practice one. Tell the organizer it may be a real scam and not to click.");
+    await recordReport(organizerId, input.drillId);
+    return ok({ recorded: true, from: drill.fromName, subject: drill.scenarioLabel });
   } },
-  { name: "get_family_report", title: "Family scoreboard", readOnly: true, description: "Returns per-member totals of drills sent, clicked, details entered, and reported, plus each person's latest drill. Use it for a friendly weekly recap.", inputSchema: schema(), async run(organizerId) {
+  { name: "get_family_report", title: "Family recap", readOnly: true, description: "Returns per-member totals of drills sent, clicked, details entered, and reported, plus each person's latest drill. Use it for a friendly recap. Never rank people or present it as a score.", inputSchema: schema(), async run(organizerId) {
     return ok({ members: await getFamilyReport(organizerId) });
   } },
-  { name: "list_events", title: "Read recent activity", readOnly: true, description: "Returns the activity feed, oldest first. Pass the last cursor as since to get only new events. drill.revealed means the person clicked through to the lesson page.", inputSchema: schema({ since: text("Cursor from a previous event, or an ISO date.") }), async run(organizerId, input) {
+  { name: "list_events", title: "Read recent activity", readOnly: true, description: "Returns the activity feed, oldest first. Pass the last cursor as since to get only new events. Types: drill.sent (sent or scheduled), drill.revealed (the person clicked through to the lesson page), lure.engaged (they confirmed the click), credentials.submitted (they pressed Sign in on a practice page; nothing they typed was sent), drill.reported (they told the organizer), drill.failed (delivery failed). Heads-up emails don't appear here.", inputSchema: schema({ since: text("Cursor from a previous event, or an ISO date.") }), async run(organizerId, input) {
     return ok({ events: await getBotEvents(organizerId, typeof input.since === "string" ? input.since : undefined) });
   } },
   { name: "pause_drills", title: "Pause all drills", readOnly: false, description: "Stop all new drills for the household. Use it right away if any member asks to stop.", inputSchema: schema(), async run(organizerId) {

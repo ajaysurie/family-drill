@@ -12,6 +12,7 @@ ALTER TABLE "HouseholdAgreement" ADD COLUMN IF NOT EXISTS "enabledCategories" te
 ALTER TABLE "HouseholdAgreement" ADD COLUMN IF NOT EXISTS "smsPreview" integer NOT NULL DEFAULT 0;
 ALTER TABLE "HouseholdAgreement" ADD COLUMN IF NOT EXISTS "timeZone" text;
 CREATE TABLE IF NOT EXISTS "Member" ("id" text PRIMARY KEY, "name" text NOT NULL, "email" text NOT NULL, "householdId" text NOT NULL REFERENCES "HouseholdAgreement"("id") ON DELETE CASCADE);
+ALTER TABLE "Member" ADD COLUMN IF NOT EXISTS "optedOutAt" timestamp;
 CREATE TABLE IF NOT EXISTS "Attempt" ("id" text PRIMARY KEY, "memberId" text NOT NULL REFERENCES "Member"("id") ON DELETE CASCADE, "scenarioId" text NOT NULL, "drillToken" text NOT NULL UNIQUE, "createdAt" timestamp NOT NULL DEFAULT now(), "scheduledFor" timestamp);
 CREATE TABLE IF NOT EXISTS "DrillEvent" ("id" text PRIMARY KEY, "attemptId" text NOT NULL REFERENCES "Attempt"("id") ON DELETE CASCADE, "type" "DrillEventType" NOT NULL, "occurredAt" timestamp NOT NULL DEFAULT now(), "summary" text NOT NULL, UNIQUE ("attemptId", "type"));
 CREATE TABLE IF NOT EXISTS "BotInstall" ("id" text PRIMARY KEY, "householdId" text NOT NULL UNIQUE REFERENCES "HouseholdAgreement"("id") ON DELETE CASCADE, "token" text NOT NULL UNIQUE, "active" integer NOT NULL DEFAULT 1, "householdPaused" integer NOT NULL DEFAULT 0);
