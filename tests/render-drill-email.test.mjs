@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { loadLib } from "./helpers/load-ts.mjs";
 
@@ -37,12 +38,19 @@ test("email artwork is static, shared by every recipient, and has readable fallb
     assert.equal(images.length, 2, scenario.id);
     for (const tag of images) {
       const src = tag.match(/src="([^"]+)"/)[1];
-      assert.match(src, /^https:\/\/app\.example\.test\/email-assets\/(?:logo|hero)\/[\w-]+\.png$/, "no per-recipient query or token");
+      assert.match(src, /^https:\/\/app\.example\.test\/(?:brand\/logos|email-assets\/hero)\/[\w-]+\.png$/, "no per-recipient query or token");
       assert.doesNotMatch(src, /secret-token|maya/i);
       assert.match(tag, /alt="[^"]+"/);
       assert.match(tag, /width="\d+" height="\d+"/);
     }
     assert.doesNotMatch(html, /data:image|<svg\b|<script\b|<form\b/i);
+  }
+});
+
+test("every brand logo an email points at ships in public/", () => {
+  for (const scenario of scenarios) {
+    const src = renderDrillEmail(scenario, member, "#", "").html.match(/src="(\/brand\/logos\/[\w-]+\.png)"/)[1];
+    assert.ok(existsSync(new URL(`../public${src}`, import.meta.url)), src);
   }
 });
 

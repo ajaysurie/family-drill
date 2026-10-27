@@ -1,4 +1,4 @@
-import { LOGO_HEIGHT, appBaseUrl, logoPath, logoWidth } from "./email-assets";
+import { FAMILY_DRILL_LOGO, appBaseUrl } from "./email-assets";
 import { escapeHtml } from "./render-drill-email";
 
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
@@ -12,7 +12,7 @@ export function renderFamilyDrillEmail(email: FamilyDrillEmail, assetBase = appB
     + `<body style="margin:0;padding:0;background:#f3efe3;font-family:${FONT};color:${INK}"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(email.preheader)}${"&nbsp;&zwnj;".repeat(60)}</div>`
     + `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f3efe3"><tr><td align="center" style="padding:32px 12px">`
     + `<table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;background:#fbfaf5;border:1px solid #d8dcd4;border-radius:16px;font-family:${FONT}">`
-    + `<tr><td style="padding:28px 36px 0"><img src="${assetBase}${logoPath("family-drill")}" width="${logoWidth("Family Drill")}" height="${LOGO_HEIGHT}" alt="Family Drill" style="display:block;border:0;font-size:20px;font-weight:800;color:${INK}"></td></tr>`
+    + `<tr><td style="padding:28px 36px 0"><img src="${assetBase}${FAMILY_DRILL_LOGO.path}" width="${FAMILY_DRILL_LOGO.width}" height="${FAMILY_DRILL_LOGO.height}" alt="Family Drill" style="display:block;border:0;font-size:20px;font-weight:800;color:${INK}"></td></tr>`
     + (email.illustration ? `<tr><td style="padding:22px 36px 0"><img src="${assetBase}/brand/family-check.jpg" width="488" height="267" alt="${escapeHtml(email.illustration)}" style="display:block;width:100%;max-width:488px;height:auto;border:0;border-radius:14px"></td></tr>` : "")
     + `<tr><td style="padding:26px 36px 8px"><h1 style="margin:0 0 18px;font-size:26px;line-height:1.25;letter-spacing:-0.5px;color:${INK}">${escapeHtml(email.heading)}</h1>`
     + email.paragraphs.map((text) => `<p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:${INK}">${escapeHtml(text)}</p>`).join("")

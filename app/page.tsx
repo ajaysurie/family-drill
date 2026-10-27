@@ -46,7 +46,7 @@ export default async function Home() {
       <div className="drill-demo-art" aria-label="A practice email and the lesson that follows a click">
         <div className="mock-email">
           <div className="mock-from"><b>{sample.fromName}</b><span>{sample.subject}</span></div>
-          <img src={logoPath(sample.brandId)} alt={brands[sample.brandId].name} height={26} className="mock-logo" />
+          <img src={logoPath(sample.brandId)} alt={brands[sample.brandId].name} width={brands[sample.brandId].logo.width} height={brands[sample.brandId].logo.height} className="mock-logo" />
           <img src={heroPath(sample.id)} alt="" width={600} height={225} />
           <p>{sample.bodyParagraphs?.[1]}</p>
           <span className="mock-button" style={{ background: brands[sample.brandId].primary }}>{sample.ctaLabel}</span>

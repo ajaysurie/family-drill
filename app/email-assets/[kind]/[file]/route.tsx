@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { brands, type Brand } from "../../../../lib/brands";
-import { HERO_SIZE, LOGO_HEIGHT, logoWidth } from "../../../../lib/email-assets";
+import { FAMILY_DRILL_LOGO, HERO_SIZE } from "../../../../lib/email-assets";
 import { googleFonts } from "../../../../lib/og-fonts";
 import scenarios from "../../../../lib/scenarios.json";
 import type { BrandId, Scenario } from "../../../../lib/types";
@@ -9,16 +9,14 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 const headers = { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" };
-const FAMILY_DRILL = { name: "Family Drill", primary: "#176b52", ink: "#17312b" };
+const FAMILY_DRILL = { name: "Family Drill", ink: "#17312b" };
 
 export function generateStaticParams() {
   return [
-    ...[...Object.keys(brands), "family-drill"].map((id) => ({ kind: "logo", file: `${id}.png` })),
+    { kind: "logo", file: "family-drill.png" },
     ...scenarios.map((scenario) => ({ kind: "hero", file: `${scenario.id}.png` })),
   ];
 }
-
-const Mark = ({ path, color, size }: { path: string; color: string; size: number }) => <svg width={size} height={size} viewBox="0 0 28 28" fill="none" stroke={color} strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round"><path d={path} /></svg>;
 
 const HouseMark = ({ size }: { size: number }) => <svg width={size} height={size} viewBox="0 0 64 64"><circle cx="32" cy="32" r="31" fill="#dff3e9" /><path d="M13 31 32 15l19 16v21H13Z" fill="#fbfaf5" stroke="#17312b" strokeWidth="4" strokeLinejoin="round" /><path d="M25 52V37h14v15" fill="#dff3e9" stroke="#17312b" strokeWidth="4" strokeLinejoin="round" /><path d="M23 29c2-5 7-5 9 0 2-5 7-5 9 0 0 5-9 10-9 10s-9-5-9-10Z" fill="#176b52" /></svg>;
 
@@ -60,13 +58,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ kin
   const { kind, file } = await params;
   const id = file.replace(/\.png$/, "");
   if (kind === "logo") {
-    const brand = id === "family-drill" ? FAMILY_DRILL : brands[id as BrandId];
-    if (!brand) return new Response("Not found", { status: 404 });
-    const scale = 2, height = LOGO_HEIGHT * scale;
-    return new ImageResponse(<div style={{ display: "flex", alignItems: "center", width: "100%", height: "100%", fontFamily: id === "family-drill" ? "Manrope" : "Inter" }}>
-      {id === "family-drill" ? <HouseMark size={height} /> : <Mark path={(brand as Brand).markPath} color={brand.primary} size={height} />}
-      <div style={{ display: "flex", marginLeft: 16, fontSize: 40, fontWeight: 800, letterSpacing: -1, color: id === "family-drill" ? FAMILY_DRILL.ink : brand.primary }}>{brand.name}</div>
-    </div>, { width: logoWidth(brand.name) * scale, height, headers, fonts: await googleFonts(id === "family-drill" ? "Manrope" : "Inter", [800]) });
+    if (id !== "family-drill") return new Response("Not found", { status: 404 });
+    const scale = 2, height = FAMILY_DRILL_LOGO.height * scale;
+    return new ImageResponse(<div style={{ display: "flex", alignItems: "center", width: "100%", height: "100%", fontFamily: "Manrope" }}>
+      <HouseMark size={height} />
+      <div style={{ display: "flex", marginLeft: 16, fontSize: 40, fontWeight: 800, letterSpacing: -1, color: FAMILY_DRILL.ink }}>{FAMILY_DRILL.name}</div>
+    </div>, { width: FAMILY_DRILL_LOGO.width * scale, height, headers, fonts: await googleFonts("Manrope", [800]) });
   }
   const scenario = (scenarios as Scenario[]).find((item) => item.id === id);
   if (kind !== "hero" || !scenario) return new Response("Not found", { status: 404 });

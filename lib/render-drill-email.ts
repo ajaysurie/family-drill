@@ -1,5 +1,5 @@
 import { brands } from "./brands";
-import { HERO_SIZE, LOGO_HEIGHT, heroPath, logoPath, logoWidth } from "./email-assets";
+import { HERO_SIZE, heroPath, logoPath } from "./email-assets";
 import type { Member, Scenario } from "./types";
 
 export type RenderedDrillEmail = { fromName: string; to: string; subject: string; text: string; html: string };
@@ -29,7 +29,7 @@ export function renderDrillEmail(s: Scenario, member: Member, url: string, asset
   const greeting = paragraph(`Hello ${member.name},`);
   const copy = paragraphs.map(paragraph).join("");
   const preheader = escapeHtml(s.preheader ?? s.preview) + "&nbsp;&zwnj;".repeat(60);
-  const logo = `<img src="${assetBase}${logoPath(s.brandId)}" width="${logoWidth(b.name)}" height="${LOGO_HEIGHT}" alt="${escapeHtml(b.name)}" style="display:block;border:0;font-size:20px;font-weight:800;color:${b.primary}">`;
+  const logo = `<img src="${assetBase}${logoPath(s.brandId)}" width="${b.logo.width}" height="${b.logo.height}" alt="${escapeHtml(b.name)}" style="display:block;border:0;font-size:20px;font-weight:800;color:${b.primary}">`;
   const hero = `<img data-layout-hero="${s.layoutId}" src="${assetBase}${heroPath(s.id)}" width="${HERO_SIZE.width}" height="${HERO_SIZE.height}" alt="${escapeHtml(`${s.heroTitle}. ${s.heroCaption}`)}" style="display:block;width:100%;max-width:${HERO_SIZE.width}px;height:auto;border:0;font-size:18px;font-weight:700;color:#ffffff">`;
   const meta = s.reference ? `<td align="right" style="font-size:12px;line-height:1.4;color:${MUTED}">${escapeHtml(s.reference.label)}<br><strong style="color:#111827">${escapeHtml(s.reference.value)}</strong></td>` : "";
   const footerLink = (label: string) => `<a href="${escapeHtml(url)}" style="color:${MUTED};text-decoration:underline">${label}</a>`;

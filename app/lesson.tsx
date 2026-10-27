@@ -30,7 +30,7 @@ export function EmailReplica({ scenario, sender }: { scenario: Scenario; sender:
       <div className="replica-row"><span><b>Subject:</b> {scenario.subject}</span></div>
     </div>
     <div className="replica-body">
-      <img src={logoPath(scenario.brandId)} alt={brand.name} height={28} className="replica-logo" />
+      <img src={logoPath(scenario.brandId)} alt={brand.name} width={brand.logo.width} height={brand.logo.height} className="replica-logo" />
       <img src={heroPath(scenario.id)} alt="" className="replica-hero" />
       <div className="replica-row"><span className="pins">{scenario.clues.map((clue, index) => <span key={clue.label}>{pin(index + 2)}</span>)}</span><p>{scenario.bodyParagraphs?.join(" ")}</p></div>
       <div className="replica-row">{pin(scenario.clues.length + 2)}<span className="replica-button" style={{ background: brand.primary }}>{scenario.ctaLabel}</span></div>
