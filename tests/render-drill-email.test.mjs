@@ -46,6 +46,10 @@ test("email artwork is static, shared by every recipient, and has readable fallb
   }
 });
 
+test("footers never double up a legal name's trailing period", () => {
+  for (const scenario of scenarios) assert.doesNotMatch(renderDrillEmail(scenario, member, "https://example.test/d/x", "").html, /\.\. This is an automated message/, scenario.id);
+});
+
 test("site previews can render artwork from relative paths", () => {
   const html = renderDrillEmail(scenarios[0], member, "#lesson", "").html;
   assert.match(html, /src="\/email-assets\/hero\/parcel-redelivery\.png"/);

@@ -8,7 +8,7 @@ export const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (c) => ({
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const MUTED = "#6b7280", RULE = "#e5e7eb";
 
-const button = (label: string, url: string, color: string, align = "left") => `<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="${align}" style="margin:28px 0 8px"><tr><td bgcolor="${color}" style="border-radius:8px"><a href="${escapeHtml(url)}" style="display:inline-block;padding:15px 30px;font-family:${FONT};font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px">${escapeHtml(label)}</a></td></tr></table>`;
+const button = (label: string, url: string, color: string, align = "left") => `<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="${align}" style="margin:28px ${align === "center" ? "auto" : "0"} 8px"><tr><td bgcolor="${color}" style="border-radius:8px"><a href="${escapeHtml(url)}" style="display:inline-block;padding:15px 30px;font-family:${FONT};font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px">${escapeHtml(label)}</a></td></tr></table>`;
 const paragraph = (text: string) => `<p style="margin:0 0 16px;font-size:16px;line-height:1.55;color:#1f2937">${escapeHtml(text)}</p>`;
 const keyValueTable = (rows: [string, string][], strongLast = false) => `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0 4px;border:1px solid ${RULE};border-radius:8px;border-collapse:separate">${rows.map(([label, value], index) => { const strong = strongLast && index === rows.length - 1; return `<tr><td style="padding:13px 16px;font-size:14px;color:${strong ? "#111827" : MUTED};${strong ? "font-weight:700;" : ""}${index ? `border-top:1px solid ${RULE};` : ""}">${escapeHtml(label)}</td><td align="right" style="padding:13px 16px;font-size:14px;color:#111827;font-weight:${strong ? 800 : 600};${index ? `border-top:1px solid ${RULE};` : ""}">${escapeHtml(value)}</td></tr>`; }).join("")}</table>`;
 
@@ -43,7 +43,7 @@ export function renderDrillEmail(s: Scenario, member: Member, url: string, asset
     + `<tr><td style="padding:22px 40px 28px;background:#f9fafb;border-top:1px solid ${RULE};font-size:12px;line-height:1.6;color:${MUTED}">`
     + `<p style="margin:0 0 10px">${footerLines.map(escapeHtml).join("<br>")}</p>`
     + `<p style="margin:0 0 10px">${footerLink("Help Center")} &nbsp;·&nbsp; ${footerLink("Privacy Policy")} &nbsp;·&nbsp; ${footerLink("Notification settings")}</p>`
-    + `<p style="margin:0">© ${new Date().getFullYear()} ${escapeHtml(b.legalName)}. This is an automated message, please do not reply.</p>`
+    + `<p style="margin:0">© ${new Date().getFullYear()} ${escapeHtml(b.legalName.replace(/\.$/, ""))}. This is an automated message, please do not reply.</p>`
     + `</td></tr></table></td></tr></table></body></html>`;
   const text = [`${b.name}`, s.subject, `Hello ${member.name},`, ...paragraphs, ...(s.reference ? [`${s.reference.label}: ${s.reference.value}`] : []), ...(s.lineItems ?? []).map((item) => `${item.label}: ${item.amount}`), `${s.ctaLabel ?? "View details"}: ${url}`, ...footerLines].join("\n\n");
   return { fromName: s.fromName, to: member.email, subject: s.subject, text, html };
