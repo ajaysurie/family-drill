@@ -18,7 +18,7 @@ Assistants that add connectors by URL and sign in, such as Meta Muse, Claude, an
 
 1. An unauthenticated `POST /api/mcp` returns `401` with `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource"`.
 2. The resource metadata names the app origin as the authorization server. `/.well-known/oauth-authorization-server` lists the endpoints.
-3. The client registers at `POST /oauth/register` with `redirect_uris`. HTTPS, localhost, and native-app schemes are allowed. The response carries a `client_id` and uses no client secret.
+3. The client registers at `POST /oauth/register` with `redirect_uris`. HTTPS, localhost, and native-app schemes are allowed. The response carries a `client_id` and uses no client secret. A client can skip this step by using the HTTPS URL of its client metadata document as `client_id`. Family Drill fetches that document at sign-in and accepts it only if its `client_id` matches the URL and its `redirect_uris` pass the same rules. Documents on private or internal addresses are refused.
 4. The organizer opens `/oauth/authorize` with `response_type=code`, `code_challenge`, and `code_challenge_method=S256`. A signed-out organizer goes to `/login` and comes back. The consent page names the client and the host it returns to.
 5. `POST /oauth/token` with `grant_type=authorization_code`, the `code`, and the `code_verifier` returns `{ "access_token", "token_type": "Bearer", "scope": "family-drill" }`. Codes expire after 10 minutes and work once.
 

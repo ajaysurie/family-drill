@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gt, isNull } from "drizzle-orm";
+import { fetchClientMetadata, isMetadataClientId } from "./client-metadata";
 import { db, ensureSchema } from "./db";
 import { oauthClients, oauthCodes } from "./schema";
 import { verifyInstall } from "./store";
@@ -22,6 +23,7 @@ export const authorizationServerMetadata = (base: string) => ({
   grant_types_supported: ["authorization_code"],
   code_challenge_methods_supported: ["S256"],
   token_endpoint_auth_methods_supported: ["none"],
+  client_id_metadata_document_supported: true,
   scopes_supported: [OAUTH_SCOPE],
 });
 
@@ -52,6 +54,15 @@ export async function registerClient(body: unknown) {
 
 async function getClient(id: string) {
   await ensureSchema();
+  if (isMetadataClientId(id)) {
+    // Re-read the document on every sign-in so a changed name or redirect list takes effect; the
+    // stored row only exists so codes can reference the client.
+    const metadata = await fetchClientMetadata(id, isAllowedRedirect);
+    if (!metadata) return;
+    const values = { name: metadata.name, redirectUris: JSON.stringify(metadata.redirectUris) };
+    await db.insert(oauthClients).values({ id, ...values }).onConflictDoUpdate({ target: oauthClients.id, set: values });
+    return { id, ...metadata };
+  }
   const [row] = await db.select().from(oauthClients).where(eq(oauthClients.id, id));
   return row && { id: row.id, name: row.name, redirectUris: JSON.parse(row.redirectUris) as string[] };
 }
@@ -61,7 +72,7 @@ export type AuthorizeRequest = { clientId: string; clientName: string; redirectU
 // Errors before the redirect URI is trusted are shown on our page; later ones go back to the client.
 export async function parseAuthorizeRequest(params: Record<string, string | undefined>): Promise<{ request: AuthorizeRequest } | { error: string; redirect?: string }> {
   const client = params.client_id ? await getClient(params.client_id) : undefined;
-  if (!client) return { error: "This assistant isn't registered with Family Drill. Try adding the connector again." };
+  if (!client) return { error: params.client_id && isMetadataClientId(params.client_id) ? "Family Drill couldn't read this assistant's connection details. Try adding the connector again in a minute." : "This assistant isn't registered with Family Drill. Try adding the connector again." };
   const redirectUri = params.redirect_uri ?? (client.redirectUris.length === 1 ? client.redirectUris[0] : undefined);
   if (!redirectUri || !client.redirectUris.includes(redirectUri)) return { error: "The assistant sent a return address Family Drill doesn't recognize." };
   const back = (error: string) => { const url = new URL(redirectUri); url.searchParams.set("error", error); if (params.state) url.searchParams.set("state", params.state); return { error, redirect: url.toString() }; };

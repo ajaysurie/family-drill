@@ -58,7 +58,7 @@ Organizers sign in at `/login` and land on `/install`. That page shows their ins
 
 Every assistant reaches the same tool registry in `lib/bot-tools.ts` through one of three routes:
 
-- `POST /api/mcp` is a stateless Streamable HTTP MCP server. Assistants such as Meta Muse, Claude, and ChatGPT connect with OAuth: they register at `/oauth/register`, the organizer signs in and chooses Allow at `/oauth/authorize`, and `/oauth/token` returns the install code as the access token. Other assistants send `Authorization: Bearer <install code>`, or use `POST /api/mcp/<install code>` if they can only store a URL. Discovery documents live at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
+- `POST /api/mcp` is a stateless Streamable HTTP MCP server. Assistants such as Meta Muse, Claude, and ChatGPT connect with OAuth: they register at `/oauth/register` or use an HTTPS client metadata document URL as their `client_id`, the organizer signs in and chooses Allow at `/oauth/authorize`, and `/oauth/token` returns the install code as the access token. Other assistants send `Authorization: Bearer <install code>`, or use `POST /api/mcp/<install code>` if they can only store a URL. Discovery documents live at `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
 - `POST /api/bot/tools/<tool_name>` runs any tool with a JSON body. `GET /api/bot/tools` lists the tools with their JSON schemas, and `/openapi.json` describes them.
 - The original REST routes are in the [eggbot API contract](docs/bot-api.md).
 
